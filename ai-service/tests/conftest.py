@@ -55,6 +55,6 @@ def _migrated_db():
 @pytest.fixture
 def db_url(_migrated_db):
     with psycopg.connect(_migrated_db, autocommit=True) as conn:
-        conn.execute("TRUNCATE user_sessions, job_postings, unmapped_skills, document_chunks CASCADE")
+        conn.execute("TRUNCATE user_sessions, job_postings, unmapped_skills, document_chunks, learning_resources CASCADE")
         conn.execute("REFRESH MATERIALIZED VIEW skill_demand")
     return _migrated_db

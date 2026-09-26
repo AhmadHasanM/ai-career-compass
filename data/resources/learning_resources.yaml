@@ -1,0 +1,122 @@
+# Sumber belajar terkurasi (S4-T6). Dikirim ke backend lewat:
+#   docker compose exec ai-service python scripts/ingest_cli.py resources
+#
+# - skill: slug di data/taxonomy/skills.yaml
+# - type: course | docs | video | article | book | tutorial
+# - level: beginner | intermediate | advanced
+# - est_hours: PERKIRAAN kasar waktu belajar inti, bukan angka resmi penyedia
+# - Draf awal didominasi sumber resmi berbahasa Inggris; tambahkan sumber berbahasa Indonesia (language: id).
+# - Semua URL dicek HTTP 200 pada 2026-09-26, kecuali otexts.com (202) dan dev.mysql.com (403) yang memblokir bot.
+
+resources:
+  # ---------- language ----------
+  - {skill: python, title: "The Python Tutorial (dokumentasi resmi)", url: "https://docs.python.org/3/tutorial/", type: docs, level: beginner, est_hours: 15}
+  - {skill: python, title: "Python for Everybody", url: "https://www.py4e.com/", type: course, level: beginner, est_hours: 40}
+  - {skill: sql, title: "SQLBolt: latihan SQL interaktif", url: "https://sqlbolt.com/", type: tutorial, level: beginner, est_hours: 5}
+  - {skill: sql, title: "Kaggle Learn: Intro to SQL", url: "https://www.kaggle.com/learn/intro-to-sql", type: course, level: beginner, est_hours: 3}
+  - {skill: javascript, title: "The Modern JavaScript Tutorial", url: "https://javascript.info/", type: tutorial, level: beginner, est_hours: 30}
+  - {skill: javascript, title: "MDN JavaScript Guide", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide", type: docs, level: beginner, est_hours: 20}
+  - {skill: typescript, title: "TypeScript Handbook", url: "https://www.typescriptlang.org/docs/handbook/intro.html", type: docs, level: intermediate, est_hours: 10}
+  - {skill: go, title: "A Tour of Go", url: "https://go.dev/tour/", type: tutorial, level: beginner, est_hours: 8}
+  - {skill: java, title: "Learn Java (dev.java)", url: "https://dev.java/learn/", type: docs, level: beginner, est_hours: 25}
+  - {skill: bash, title: "The Linux Command Line (buku gratis)", url: "https://linuxcommand.org/tlcl.php", type: book, level: beginner, est_hours: 20}
+  - {skill: r, title: "R for Data Science (2e)", url: "https://r4ds.hadley.nz/", type: book, level: beginner, est_hours: 30}
+
+  # ---------- framework ----------
+  - {skill: fastapi, title: "FastAPI Tutorial - User Guide", url: "https://fastapi.tiangolo.com/tutorial/", type: docs, level: beginner, est_hours: 10}
+  - {skill: flask, title: "Flask Tutorial (dokumentasi resmi)", url: "https://flask.palletsprojects.com/en/stable/tutorial/", type: docs, level: beginner, est_hours: 6}
+  - {skill: django, title: "Writing your first Django app", url: "https://docs.djangoproject.com/en/stable/intro/tutorial01/", type: docs, level: beginner, est_hours: 10}
+  - {skill: rest-api, title: "MDN: An overview of HTTP", url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview", type: docs, level: beginner, est_hours: 3}
+  - {skill: nodejs, title: "Introduction to Node.js", url: "https://nodejs.org/learn/getting-started/introduction-to-nodejs", type: docs, level: beginner, est_hours: 8}
+  - {skill: react, title: "React: Learn (dokumentasi resmi)", url: "https://react.dev/learn", type: docs, level: beginner, est_hours: 12}
+  - {skill: nextjs, title: "Next.js Learn", url: "https://nextjs.org/learn", type: course, level: beginner, est_hours: 10}
+  - {skill: streamlit, title: "Streamlit: Get started", url: "https://docs.streamlit.io/get-started", type: docs, level: beginner, est_hours: 3}
+  - {skill: pytorch, title: "PyTorch: Learn the Basics", url: "https://docs.pytorch.org/tutorials/beginner/basics/intro.html", type: tutorial, level: beginner, est_hours: 8}
+  - {skill: tensorflow, title: "TensorFlow Tutorials", url: "https://www.tensorflow.org/tutorials", type: tutorial, level: beginner, est_hours: 10}
+  - {skill: keras, title: "Keras: Getting started", url: "https://keras.io/getting_started/", type: docs, level: beginner, est_hours: 5}
+  - {skill: scikit-learn, title: "scikit-learn: Getting Started", url: "https://scikit-learn.org/stable/getting_started.html", type: docs, level: beginner, est_hours: 4}
+  - {skill: scikit-learn, title: "Kaggle Learn: Intro to Machine Learning", url: "https://www.kaggle.com/learn/intro-to-machine-learning", type: course, level: beginner, est_hours: 3}
+  - {skill: huggingface-transformers, title: "Hugging Face Transformers documentation", url: "https://huggingface.co/docs/transformers/index", type: docs, level: intermediate, est_hours: 10}
+  - {skill: huggingface-transformers, title: "Hugging Face LLM Course", url: "https://huggingface.co/learn/llm-course/chapter1/1", type: course, level: intermediate, est_hours: 30}
+
+  # ---------- llm ----------
+  - {skill: llm, title: "Intro to Large Language Models (Andrej Karpathy)", url: "https://www.youtube.com/watch?v=zjkBMFhNj_g", type: video, level: beginner, est_hours: 1}
+  - {skill: prompt-engineering, title: "Prompt Engineering Guide", url: "https://www.promptingguide.ai/", type: docs, level: beginner, est_hours: 6}
+  - {skill: prompt-engineering, title: "Gemini API: Prompt design strategies", url: "https://ai.google.dev/gemini-api/docs/prompting-strategies", type: docs, level: beginner, est_hours: 2}
+  - {skill: llm-api, title: "Gemini API documentation", url: "https://ai.google.dev/gemini-api/docs", type: docs, level: beginner, est_hours: 4}
+  - {skill: llm-api, title: "OpenAI API: Developer quickstart", url: "https://developers.openai.com/api/docs/quickstart", type: docs, level: beginner, est_hours: 2}
+  - {skill: embeddings, title: "Sentence Transformers documentation", url: "https://www.sbert.net/", type: docs, level: intermediate, est_hours: 5}
+  - {skill: semantic-search, title: "Hugging Face: Semantic search with FAISS", url: "https://huggingface.co/learn/llm-course/chapter5/6", type: tutorial, level: intermediate, est_hours: 2}
+  - {skill: rag, title: "LangChain: RAG with Deep Agents", url: "https://docs.langchain.com/oss/python/deepagents/rag", type: tutorial, level: intermediate, est_hours: 4}
+  - {skill: rag, title: "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (paper)", url: "https://arxiv.org/abs/2005.11401", type: article, level: advanced, est_hours: 3}
+  - {skill: langchain, title: "LangChain overview (dokumentasi resmi)", url: "https://docs.langchain.com/oss/python/langchain/overview", type: docs, level: intermediate, est_hours: 8}
+  - {skill: llamaindex, title: "LlamaIndex documentation", url: "https://developers.llamaindex.ai/python/framework/", type: docs, level: intermediate, est_hours: 8}
+  - {skill: langgraph, title: "LangChain Academy: Introduction to LangGraph", url: "https://academy.langchain.com/courses/intro-to-langgraph", type: course, level: intermediate, est_hours: 6}
+  - {skill: function-calling, title: "Gemini API: Function calling", url: "https://ai.google.dev/gemini-api/docs/function-calling", type: docs, level: intermediate, est_hours: 2}
+  - {skill: function-calling, title: "OpenAI: Function calling guide", url: "https://developers.openai.com/api/docs/guides/function-calling", type: docs, level: intermediate, est_hours: 2}
+  - {skill: ai-agents, title: "Hugging Face AI Agents Course", url: "https://huggingface.co/learn/agents-course/unit0/introduction", type: course, level: intermediate, est_hours: 20}
+  - {skill: ai-agents, title: "Building effective agents (Anthropic)", url: "https://www.anthropic.com/engineering/building-effective-agents", type: article, level: intermediate, est_hours: 1}
+  - {skill: llm-fine-tuning, title: "Unsloth documentation", url: "https://unsloth.ai/docs", type: docs, level: advanced, est_hours: 8}
+  - {skill: peft, title: "Hugging Face PEFT documentation", url: "https://huggingface.co/docs/peft/index", type: docs, level: advanced, est_hours: 6}
+  - {skill: llm-evaluation, title: "Ragas documentation", url: "https://docs.ragas.io/en/stable/", type: docs, level: intermediate, est_hours: 4}
+  - {skill: llm-observability, title: "Langfuse documentation", url: "https://langfuse.com/docs", type: docs, level: intermediate, est_hours: 4}
+  - {skill: guardrails, title: "OWASP Top 10 for LLM Applications", url: "https://genai.owasp.org/llm-top-10/", type: article, level: intermediate, est_hours: 3}
+  - {skill: llm-serving, title: "vLLM documentation", url: "https://docs.vllm.ai/", type: docs, level: advanced, est_hours: 6}
+  - {skill: llm-serving, title: "Ollama", url: "https://ollama.com/", type: docs, level: beginner, est_hours: 2}
+
+  # ---------- ml ----------
+  - {skill: machine-learning, title: "Google Machine Learning Crash Course", url: "https://developers.google.com/machine-learning/crash-course", type: course, level: beginner, est_hours: 15}
+  - {skill: machine-learning, title: "Machine Learning Specialization (Andrew Ng)", url: "https://www.coursera.org/specializations/machine-learning-introduction", type: course, level: beginner, est_hours: 90, is_free: false}
+  - {skill: deep-learning, title: "Dive into Deep Learning", url: "https://d2l.ai/", type: book, level: intermediate, est_hours: 60}
+  - {skill: deep-learning, title: "Practical Deep Learning for Coders (fast.ai)", url: "https://course.fast.ai/", type: course, level: intermediate, est_hours: 40}
+  - {skill: nlp, title: "Stanford CS224N: NLP with Deep Learning", url: "https://web.stanford.edu/class/cs224n/", type: course, level: advanced, est_hours: 60}
+  - {skill: computer-vision, title: "CS231n: Deep Learning for Computer Vision (catatan kuliah)", url: "https://cs231n.github.io/", type: course, level: intermediate, est_hours: 30}
+  - {skill: transformer-architecture, title: "The Illustrated Transformer", url: "https://jalammar.github.io/illustrated-transformer/", type: article, level: intermediate, est_hours: 2}
+  - {skill: transformer-architecture, title: "Attention Is All You Need (paper)", url: "https://arxiv.org/abs/1706.03762", type: article, level: advanced, est_hours: 3}
+  - {skill: statistics, title: "OpenIntro Statistics (buku gratis)", url: "https://www.openintro.org/book/os/", type: book, level: beginner, est_hours: 40}
+  - {skill: statistics, title: "Khan Academy: Statistics and probability", url: "https://www.khanacademy.org/math/statistics-probability", type: course, level: beginner, est_hours: 30}
+  - {skill: linear-algebra, title: "Mathematics for Machine Learning (buku)", url: "https://mml-book.github.io/", type: book, level: intermediate, est_hours: 50}
+  - {skill: linear-algebra, title: "Essence of Linear Algebra (3Blue1Brown)", url: "https://www.3blue1brown.com/topics/linear-algebra", type: video, level: beginner, est_hours: 4}
+  - {skill: feature-engineering, title: "Kaggle Learn: Feature Engineering", url: "https://www.kaggle.com/learn/feature-engineering", type: course, level: intermediate, est_hours: 5}
+  - {skill: model-evaluation, title: "scikit-learn: Metrics and scoring", url: "https://scikit-learn.org/stable/modules/model_evaluation.html", type: docs, level: intermediate, est_hours: 3}
+  - {skill: recommender-systems, title: "Google: Recommendation Systems course", url: "https://developers.google.com/machine-learning/recommendation", type: course, level: intermediate, est_hours: 4}
+  - {skill: time-series, title: "Forecasting: Principles and Practice (3e)", url: "https://otexts.com/fpp3/", type: book, level: intermediate, est_hours: 40}
+
+  # ---------- mlops ----------
+  - {skill: git, title: "Pro Git (buku gratis)", url: "https://git-scm.com/book/en/v2", type: book, level: beginner, est_hours: 15}
+  - {skill: linux, title: "Ubuntu tutorial: The Linux command line for beginners", url: "https://ubuntu.com/tutorials/command-line-for-beginners", type: tutorial, level: beginner, est_hours: 2}
+  - {skill: docker, title: "Docker: Get started", url: "https://docs.docker.com/get-started/", type: docs, level: beginner, est_hours: 6}
+  - {skill: kubernetes, title: "Kubernetes Basics", url: "https://kubernetes.io/docs/tutorials/kubernetes-basics/", type: tutorial, level: beginner, est_hours: 6}
+  - {skill: ci-cd, title: "GitHub Actions documentation", url: "https://docs.github.com/en/actions", type: docs, level: beginner, est_hours: 5}
+  - {skill: model-deployment, title: "BentoML documentation", url: "https://docs.bentoml.com/", type: docs, level: intermediate, est_hours: 6}
+  - {skill: mlflow, title: "MLflow documentation", url: "https://mlflow.org/docs/latest/index.html", type: docs, level: intermediate, est_hours: 5}
+  - {skill: mlops, title: "Made With ML", url: "https://madewithml.com/", type: course, level: intermediate, est_hours: 40}
+  - {skill: mlops, title: "MLOps Zoomcamp (DataTalksClub)", url: "https://github.com/DataTalksClub/mlops-zoomcamp", type: course, level: intermediate, est_hours: 60}
+  - {skill: monitoring, title: "Prometheus: Getting started", url: "https://prometheus.io/docs/prometheus/latest/getting_started/", type: docs, level: beginner, est_hours: 3}
+  - {skill: airflow, title: "Airflow tutorials", url: "https://airflow.apache.org/docs/apache-airflow/stable/tutorial/index.html", type: tutorial, level: intermediate, est_hours: 5}
+
+  # ---------- cloud ----------
+  - {skill: aws, title: "AWS Skill Builder", url: "https://skillbuilder.aws/", type: course, level: beginner, est_hours: 20}
+  - {skill: gcp, title: "Google Skills (sebelumnya Cloud Skills Boost)", url: "https://www.skills.google/", type: course, level: beginner, est_hours: 20}
+  - {skill: azure, title: "Microsoft Learn: Azure training", url: "https://learn.microsoft.com/en-us/training/azure/", type: course, level: beginner, est_hours: 20}
+  - {skill: aws-sagemaker, title: "What is Amazon SageMaker AI?", url: "https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html", type: docs, level: intermediate, est_hours: 5}
+  - {skill: vertex-ai, title: "Google Cloud: Gemini Enterprise Agent Platform (Vertex AI)", url: "https://docs.cloud.google.com/gemini-enterprise-agent-platform", type: docs, level: intermediate, est_hours: 6}
+  - {skill: azure-openai, title: "Microsoft Foundry documentation (Azure OpenAI)", url: "https://learn.microsoft.com/en-us/azure/foundry/", type: docs, level: intermediate, est_hours: 4}
+
+  # ---------- data ----------
+  - {skill: pandas, title: "10 minutes to pandas", url: "https://pandas.pydata.org/docs/user_guide/10min.html", type: docs, level: beginner, est_hours: 2}
+  - {skill: pandas, title: "Kaggle Learn: Pandas", url: "https://www.kaggle.com/learn/pandas", type: course, level: beginner, est_hours: 4}
+  - {skill: numpy, title: "NumPy: the absolute basics for beginners", url: "https://numpy.org/doc/stable/user/absolute_beginners.html", type: docs, level: beginner, est_hours: 3}
+  - {skill: data-visualization, title: "Kaggle Learn: Data Visualization", url: "https://www.kaggle.com/learn/data-visualization", type: course, level: beginner, est_hours: 4}
+  - {skill: postgresql, title: "PostgreSQL Tutorial (dokumentasi resmi)", url: "https://www.postgresql.org/docs/current/tutorial.html", type: docs, level: beginner, est_hours: 6}
+  - {skill: mysql, title: "MySQL Tutorial (dokumentasi resmi)", url: "https://dev.mysql.com/doc/refman/8.0/en/tutorial.html", type: docs, level: beginner, est_hours: 5}
+  - {skill: mongodb, title: "MongoDB University", url: "https://learn.mongodb.com/", type: course, level: beginner, est_hours: 10}
+  - {skill: redis, title: "Redis documentation", url: "https://redis.io/docs/latest/", type: docs, level: beginner, est_hours: 4}
+  - {skill: vector-database, title: "pgvector (README)", url: "https://github.com/pgvector/pgvector", type: docs, level: intermediate, est_hours: 2}
+  - {skill: vector-database, title: "Qdrant documentation", url: "https://qdrant.tech/documentation/", type: docs, level: intermediate, est_hours: 4}
+  - {skill: elasticsearch, title: "Elasticsearch: Get started", url: "https://www.elastic.co/docs/solutions/search/get-started", type: docs, level: beginner, est_hours: 4}
+  - {skill: etl, title: "Data Engineering Zoomcamp (DataTalksClub)", url: "https://github.com/DataTalksClub/data-engineering-zoomcamp", type: course, level: intermediate, est_hours: 80}
+  - {skill: spark, title: "Spark Quick Start", url: "https://spark.apache.org/docs/latest/quick-start.html", type: docs, level: beginner, est_hours: 3}
+  - {skill: bigquery, title: "BigQuery overview", url: "https://docs.cloud.google.com/bigquery/docs/introduction", type: docs, level: beginner, est_hours: 3}
+  - {skill: kafka, title: "Apache Kafka Quickstart", url: "https://kafka.apache.org/quickstart", type: docs, level: beginner, est_hours: 2}
+  - {skill: web-scraping, title: "Beautiful Soup documentation", url: "https://www.crummy.com/software/BeautifulSoup/bs4/doc/", type: docs, level: beginner, est_hours: 3}

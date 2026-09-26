@@ -50,13 +50,18 @@ class LocalEmbedder:
         self._model = None
         self._lock = asyncio.Lock()
 
+    def _load_sync(self):
+        # Import di dalam thread: `import sentence_transformers` menarik torch dan bisa makan
+        # puluhan detik; jika dijalankan di event loop, seluruh service berhenti merespons.
+        from sentence_transformers import SentenceTransformer
+
+        return SentenceTransformer(self.model_name, device="cpu")
+
     async def _load(self):
         async with self._lock:
             if self._model is None:
                 log.info("memuat model embedding lokal %s", self.model_name)
-                from sentence_transformers import SentenceTransformer
-
-                self._model = await asyncio.to_thread(SentenceTransformer, self.model_name, device="cpu")
+                self._model = await asyncio.to_thread(self._load_sync)
         return self._model
 
     async def _encode(self, texts: list[str]) -> list[list[float]]:

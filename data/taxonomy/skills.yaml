@@ -2,6 +2,8 @@
 # - slug unik, kebab-case. Nama dan slug otomatis ikut jadi alias (lowercase) saat seeding.
 # - aliases: variasi penulisan di lowongan; harus lowercase dan unik di seluruh file.
 # - prerequisites: slug skill lain; harus membentuk DAG (seeder menolak siklus).
+#   Prasyarat = urutan belajar PRAKTIS untuk AI Engineer terapan, bukan dependensi teori penuh
+#   (misal LLM cukup butuh Python; teori Transformer adalah skill terpisah).
 # - category: language | framework | llm | ml | mlops | cloud | data
 
 version: 1
@@ -134,7 +136,7 @@ skills:
     category: framework
     description: Library model pretrained untuk NLP, vision, dan audio.
     aliases: [hugging face, huggingface, transformers library, hf transformers, huggingface transformers]
-    prerequisites: [pytorch, transformer-architecture]
+    prerequisites: [pytorch]
 
   # ---------- llm ----------
   - slug: llm
@@ -142,7 +144,7 @@ skills:
     category: llm
     description: Konsep dan pemakaian model bahasa besar.
     aliases: [large language model, llms, generative ai, genai, gen ai]
-    prerequisites: [transformer-architecture]
+    prerequisites: [python]
   - slug: prompt-engineering
     name: Prompt Engineering
     category: llm
@@ -172,7 +174,7 @@ skills:
     category: llm
     description: Menggabungkan retrieval dokumen dengan generasi LLM.
     aliases: [retrieval augmented generation, retrieval-augmented generation (rag)]
-    prerequisites: [semantic-search, prompt-engineering, vector-database]
+    prerequisites: [embeddings, prompt-engineering]
   - slug: langchain
     name: LangChain
     category: llm

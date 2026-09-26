@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pgvector import Vector
 
-from src.chunking.job_chunker import JobChunk
+from src.chunking.job_chunker import Chunk
 
 
 async def replace_chunks(
@@ -15,7 +15,7 @@ async def replace_chunks(
     *,
     source_type: str,
     source_id: UUID,
-    chunks: list[JobChunk],
+    chunks: list[Chunk],
     embeddings: list[list[float]],
     metadata: dict,
 ) -> int:

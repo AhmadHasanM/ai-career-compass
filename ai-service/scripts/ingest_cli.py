@@ -5,6 +5,7 @@ Jalankan di dalam container (sudah punya akses ke backend, database, dan /data):
     docker compose exec ai-service python scripts/ingest_cli.py send            # kirim data/raw_jobs ke backend
     docker compose exec ai-service python scripts/ingest_cli.py status          # ringkasan status ekstraksi
     docker compose exec ai-service python scripts/ingest_cli.py review -n 20    # lembar validasi manual
+    docker compose exec ai-service python scripts/ingest_cli.py resources       # kirim sumber belajar terkurasi
 
 `send` memanggil POST /api/admin/jobs (backend Go), yang lalu memicu ai-service memproses tiap lowongan.
 """
@@ -12,15 +13,18 @@ Jalankan di dalam container (sudah punya akses ke backend, database, dan /data):
 from __future__ import annotations
 
 import argparse
+import asyncio
 import os
 import random
 import sys
+import time
 from collections import Counter
 from datetime import date
 from pathlib import Path
 
 import httpx
 import psycopg
+import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -30,6 +34,20 @@ from src.utils.config import get_settings  # noqa: E402
 REPO_RAW_JOBS = Path(__file__).resolve().parents[2] / "data" / "raw_jobs"
 DEFAULT_DIR = Path(os.getenv("RAW_JOBS_DIR", REPO_RAW_JOBS))
 DEFAULT_BACKEND = os.getenv("BACKEND_URL", "http://localhost:8080")
+REPO_RESOURCES = Path(__file__).resolve().parents[2] / "data" / "resources" / "learning_resources.yaml"
+DEFAULT_RESOURCES = Path(os.getenv("RESOURCES_FILE", REPO_RESOURCES))
+
+
+def post_with_retry(client: httpx.Client, path: str, payload: dict, attempts: int = 5) -> httpx.Response:
+    """POST dengan retry saat 429 (menghormati Retry-After) agar ingestion massal tidak gagal di tengah."""
+    for i in range(attempts):
+        r = client.post(path, json=payload)
+        if r.status_code != 429 or i == attempts - 1:
+            return r
+        wait = float(r.headers.get("Retry-After", "2"))
+        print(f"  rate limited, menunggu {wait:g} detik...")
+        time.sleep(min(wait, 60))
+    return r
 
 
 def cmd_send(args: argparse.Namespace) -> int:
@@ -66,7 +84,7 @@ def cmd_send(args: argparse.Namespace) -> int:
                 "raw_text": job.raw_text,
             }
             try:
-                r = client.post("/api/admin/jobs", json=payload)
+                r = post_with_retry(client, "/api/admin/jobs", payload)
             except httpx.HTTPError as e:
                 counts["error"] += 1
                 print(f"✗ {path.name}: backend tidak terjangkau ({e})")
@@ -87,6 +105,65 @@ def cmd_send(args: argparse.Namespace) -> int:
     if not args.dry_run and (counts["created"] or counts["created_not_queued"]):
         print("Ekstraksi berjalan di background; cek progres dengan: ingest_cli.py status")
     return 1 if counts["invalid"] or counts["error"] else 0
+
+
+def cmd_resources(args: argparse.Namespace) -> int:
+    token = os.getenv("ADMIN_TOKEN", "")
+    if not token:
+        print("ADMIN_TOKEN belum di-set", file=sys.stderr)
+        return 2
+    items = yaml.safe_load(args.file.read_text(encoding="utf-8"))["resources"]
+    counts: Counter[str] = Counter()
+    with httpx.Client(base_url=args.backend, timeout=30, headers={"X-Admin-Token": token}) as client:
+        for item in items:
+            payload = {
+                "skill_slug": item["skill"], "title": item["title"], "url": item["url"], "type": item["type"],
+                "level": item.get("level"), "language": item.get("language", "en"),
+                "is_free": item.get("is_free", True), "est_hours": item.get("est_hours"),
+            }
+            try:
+                r = post_with_retry(client, "/api/admin/resources", payload)
+            except httpx.HTTPError as e:
+                counts["error"] += 1
+                print(f"✗ {item['title']}: backend tidak terjangkau ({e})")
+                continue
+            if r.status_code == 201:
+                counts["created" if r.json().get("embedding_queued") else "created_not_embedded"] += 1
+            elif r.status_code == 409:
+                counts["duplicate"] += 1
+            else:
+                counts["error"] += 1
+                print(f"✗ {item['title']}: {r.status_code} {r.text[:300]}")
+    print(", ".join(f"{k} {v}" for k, v in sorted(counts.items())) + f" dari {len(items)} sumber belajar")
+    if args.embed_missing:
+        asyncio.run(embed_missing_resources())
+    return 1 if counts["error"] else 0
+
+
+async def embed_missing_resources() -> None:
+    """Embed langsung (di proses ini) sumber belajar yang belum punya chunk, misal karena pemicu gagal."""
+    from src.embeddings.embedder import get_embedder
+    from src.ingestion.resources import ResourceEmbedder
+    from src.utils.db import close_pool, open_pool
+
+    pool = await open_pool()
+    try:
+        async with pool.connection() as conn:
+            cur = await conn.execute(
+                """SELECT r.id FROM learning_resources r WHERE NOT EXISTS (
+                       SELECT 1 FROM document_chunks c
+                       WHERE c.source_type = 'learning_resource' AND c.source_id = r.id)"""
+            )
+            ids = [row[0] for row in await cur.fetchall()]
+        print(f"{len(ids)} sumber belajar belum ter-embed")
+        embedder = ResourceEmbedder(pool, get_embedder)
+        for i, rid in enumerate(ids, 1):
+            await embedder.embed(rid)
+            print(f"  {i}/{len(ids)}", end="\r")
+        if ids:
+            print(f"\n{len(ids)} sumber belajar di-embed")
+    finally:
+        await close_pool()
 
 
 def cmd_status(_: argparse.Namespace) -> int:
@@ -192,6 +269,13 @@ def main() -> int:
     rv.add_argument("--seed", type=int, default=42)
     rv.add_argument("--out", type=Path, default=Path("logs/extraction_review.md"))
     rv.set_defaults(func=cmd_review)
+
+    rs = sub.add_parser("resources", help="kirim data/resources/learning_resources.yaml ke backend")
+    rs.add_argument("--file", type=Path, default=DEFAULT_RESOURCES)
+    rs.add_argument("--backend", default=DEFAULT_BACKEND)
+    rs.add_argument("--embed-missing", action="store_true",
+                    help="setelah kirim, embed langsung sumber belajar yang belum punya chunk")
+    rs.set_defaults(func=cmd_resources)
 
     args = p.parse_args()
     return args.func(args)

@@ -110,17 +110,17 @@ def chunk_text(text: str, size: int, overlap: int) -> list[str]:
 
 
 @dataclass
-class JobChunk:
+class Chunk:
     index: int
     section: str
     content: str  # termasuk header judul/perusahaan/bagian agar retrieval punya konteks
 
 
-def chunk_job(*, title: str, company: str | None, raw_text: str, size: int = 800, overlap: int = 100) -> list[JobChunk]:
+def chunk_job(*, title: str, company: str | None, raw_text: str, size: int = 800, overlap: int = 100) -> list[Chunk]:
     header_base = f"{title}" + (f" — {company}" if company else "")
-    out: list[JobChunk] = []
+    out: list[Chunk] = []
     for sec in split_sections(raw_text):
         header = f"{header_base}\nBagian: {SECTION_LABELS[sec.name]}\n\n"
         for piece in chunk_text(sec.text, size, overlap):
-            out.append(JobChunk(index=len(out), section=sec.name, content=header + piece))
+            out.append(Chunk(index=len(out), section=sec.name, content=header + piece))
     return out

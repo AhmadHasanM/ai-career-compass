@@ -346,6 +346,24 @@ func TestRateLimit(t *testing.T) {
 	}
 }
 
+func TestAdminNotSubjectToPublicRateLimit(t *testing.T) {
+	a := newAPI(t, func(c *config.Config) { c.RateLimitRPS, c.RateLimitBurst = 0.001, 2 })
+	for i := 0; i < 5; i++ {
+		job := map[string]any{"title": "AI Engineer", "source_name": "Glints", "raw_text": testutil.LongText(),
+			"source_url": fmt.Sprintf("https://example.com/job/%d", i)}
+		if r := a.do(http.MethodPost, "/api/admin/jobs", job, "X-Admin-Token", adminToken); r.Code != http.StatusCreated {
+			t.Fatalf("admin request %d = %d, ingin 201 (ingestion massal tidak boleh kena rate limit publik)", i, r.Code)
+		}
+	}
+	var codes []int
+	for i := 0; i < 3; i++ {
+		codes = append(codes, a.do(http.MethodGet, "/api/roles", nil).Code)
+	}
+	if fmt.Sprint(codes) != "[200 200 429]" {
+		t.Errorf("endpoint publik = %v, ingin [200 200 429]", codes)
+	}
+}
+
 func TestUnknownRouteAndMethod(t *testing.T) {
 	a := newAPI(t)
 	if r := a.do(http.MethodGet, "/api/tidak-ada", nil); r.Code != http.StatusNotFound || errCode(r) != "not_found" {

@@ -35,11 +35,3 @@ def build_user_prompt(*, title: str, company: str | None, raw_text: str, roles: 
         f"Perusahaan: {company or '-'}\n\n"
         f"Teks lowongan:\n<<<\n{raw_text}\n>>>"
     )
-
-
-def build_repair_prompt(error: str) -> str:
-    return (
-        "Output sebelumnya tidak valid: "
-        f"{error}\n"
-        "Kirim ulang HANYA objek JSON yang valid sesuai skema, tanpa penjelasan."
-    )

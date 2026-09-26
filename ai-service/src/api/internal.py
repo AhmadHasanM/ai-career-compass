@@ -2,8 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
-from src.api.deps import get_processor, verify_internal_token
+from src.api.deps import get_processor, get_resource_embedder, verify_internal_token
 from src.ingestion.pipeline import JobProcessor
+from src.ingestion.resources import ResourceEmbedder
 
 router = APIRouter(prefix="/internal", dependencies=[Depends(verify_internal_token)])
 
@@ -21,3 +22,15 @@ async def process_job(
         return {"job_id": str(job_id), "status": "already_processing"}
     background.add_task(processor.run_claimed, job_id)
     return {"job_id": str(job_id), "status": "accepted"}
+
+
+@router.post("/resources/{resource_id}/embed", status_code=status.HTTP_202_ACCEPTED)
+async def embed_resource(
+    resource_id: UUID,
+    background: BackgroundTasks,
+    embedder: ResourceEmbedder = Depends(get_resource_embedder),
+) -> dict:
+    if not await embedder.exists(resource_id):
+        raise HTTPException(status_code=404, detail="sumber belajar tidak ditemukan")
+    background.add_task(embedder.run, resource_id)
+    return {"resource_id": str(resource_id), "status": "accepted"}

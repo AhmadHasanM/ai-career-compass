@@ -63,6 +63,9 @@ func respondError(c *gin.Context, err error) {
 			"error":       httpx.ErrorBody{Code: "conflict", Message: conflictErr.Message},
 			"existing_id": conflictErr.ExistingID,
 		})
+	case errors.Is(err, service.ErrProfileIncomplete):
+		httpx.AbortError(c, http.StatusConflict, "profile_required",
+			"lengkapi profil dan target role dulu lewat PUT /api/profile")
 	case errors.Is(err, service.ErrNotFound):
 		httpx.AbortError(c, http.StatusNotFound, "not_found", "data tidak ditemukan")
 	default:

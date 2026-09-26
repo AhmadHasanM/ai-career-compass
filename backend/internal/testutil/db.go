@@ -65,7 +65,7 @@ func DB(t *testing.T) *pgxpool.Pool {
 		t.Skip("TEST_DATABASE_URL tidak di-set; lewati test database")
 	}
 	_, err := pool.Exec(context.Background(), `
-		TRUNCATE user_sessions, job_postings, unmapped_skills, document_chunks, chat_messages CASCADE;
+		TRUNCATE user_sessions, job_postings, unmapped_skills, document_chunks, chat_messages, learning_resources CASCADE;
 		REFRESH MATERIALIZED VIEW skill_demand;`)
 	if err != nil {
 		t.Fatalf("reset data: %v", err)

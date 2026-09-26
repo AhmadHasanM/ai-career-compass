@@ -3,6 +3,7 @@ import hmac
 from fastapi import Header, HTTPException, Request
 
 from src.ingestion.pipeline import JobProcessor
+from src.ingestion.resources import ResourceEmbedder
 from src.utils.config import get_settings
 
 
@@ -17,3 +18,7 @@ def verify_internal_token(x_internal_token: str = Header(default="")) -> None:
 
 def get_processor(request: Request) -> JobProcessor:
     return request.app.state.processor
+
+
+def get_resource_embedder(request: Request) -> ResourceEmbedder:
+    return request.app.state.resource_embedder

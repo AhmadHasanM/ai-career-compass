@@ -2,24 +2,17 @@
 
 from __future__ import annotations
 
-import json
-import logging
-import re
 from dataclasses import dataclass
 
 from pydantic import ValidationError
 
 from src.extraction.schema import JobExtraction
 from src.llm.client import ChatModel
-from src.prompts.extraction import SYSTEM_PROMPT, build_repair_prompt, build_user_prompt
+from src.llm.json_call import JSONCallError, chat_json, load_json_object
+from src.prompts.extraction import SYSTEM_PROMPT, build_user_prompt
 
-log = logging.getLogger(__name__)
-
-_FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
-
-
-class ExtractionError(RuntimeError):
-    pass
+# Nama lama dipertahankan agar pemanggil (pipeline, test) tidak perlu tahu detail helper JSON.
+ExtractionError = JSONCallError
 
 
 @dataclass
@@ -33,18 +26,7 @@ class ExtractionResult:
 
 def parse_extraction(content: str, allowed_roles: list[str]) -> JobExtraction:
     """Parse teks balasan LLM. Melempar ValueError dengan pesan yang bisa dikirim balik ke LLM."""
-    text = _FENCE.sub("", content.strip())
-    # Beberapa model menambah kalimat di sekitar JSON; ambil objek terluar.
-    start, end = text.find("{"), text.rfind("}")
-    if start == -1 or end <= start:
-        raise ValueError("tidak ditemukan objek JSON")
-    try:
-        raw = json.loads(text[start : end + 1])
-    except json.JSONDecodeError as e:
-        raise ValueError(f"JSON tidak valid: {e.msg} (posisi {e.pos})") from e
-    if not isinstance(raw, dict):
-        raise ValueError("root JSON harus objek")
-
+    raw = load_json_object(content)
     try:
         data = JobExtraction.model_validate(raw)
     except ValidationError as e:
@@ -75,20 +57,8 @@ class JobExtractor:
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": build_user_prompt(title=title, company=company, raw_text=text, roles=roles)},
         ]
-        prompt_tokens = completion_tokens = 0
-        last_error = ""
-        for attempt in range(1, self.max_retries + 2):
-            res = await self.llm.chat(messages, temperature=self.temperature, max_tokens=self.max_tokens, json_mode=True)
-            prompt_tokens += res.prompt_tokens or 0
-            completion_tokens += res.completion_tokens or 0
-            try:
-                data = parse_extraction(res.content, roles)
-                return ExtractionResult(data, res.model, attempt, prompt_tokens, completion_tokens)
-            except ValueError as e:
-                last_error = str(e)
-                log.warning("ekstraksi percobaan %d gagal: %s", attempt, last_error)
-                messages += [
-                    {"role": "assistant", "content": res.content},
-                    {"role": "user", "content": build_repair_prompt(last_error)},
-                ]
-        raise ExtractionError(f"output LLM tetap tidak valid setelah {self.max_retries + 1} percobaan: {last_error}")
+        res = await chat_json(
+            self.llm, messages, lambda c: parse_extraction(c, roles),
+            max_retries=self.max_retries, temperature=self.temperature, max_tokens=self.max_tokens,
+        )
+        return ExtractionResult(res.data, res.model, res.attempts, res.prompt_tokens, res.completion_tokens)

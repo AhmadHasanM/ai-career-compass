@@ -53,9 +53,16 @@ Semua error berbentuk `{"error": {"code", "message", "fields?"}}`. Endpoint peng
 | GET | `/api/roles` | - | Daftar role target |
 | GET | `/api/skills?category=` | - | Taxonomy + alias + prerequisite |
 | GET / PUT | `/api/profile` | sesi | Profil + skill; PUT mengganti seluruh profil |
+| GET | `/api/insights/skill-demand?role=&level=&limit=` | - | Top skill + n + tanggal snapshot (`small_sample` jika n < 30) |
+| GET | `/api/insights/skill-demand/{skill_id}/jobs` | - | Lowongan asal sebuah persentase (bukti) |
+| GET | `/api/gap` | sesi | Skill gap (demand ≥ 20%, skor = demand × bobot kategori) + cakupan |
+| POST | `/api/roadmap/generate` | sesi | Roadmap baru: topological sort di Go, alasan + estimasi dari LLM (fallback jika gagal) |
+| GET | `/api/roadmap` | sesi | Roadmap terbaru + edge prasyarat + sumber belajar per node |
+| GET | `/api/resources?skill_id=` | - | Sumber belajar per skill |
 | POST | `/api/admin/jobs` | admin | Tambah lowongan (status `pending`); 409 jika `source_url` sudah ada |
+| POST | `/api/admin/resources` | admin | Tambah sumber belajar (`skill_id` atau `skill_slug`) lalu embed |
 
-Seluruh `/api` dibatasi rate limit per IP (`RATE_LIMIT_RPS`, `RATE_LIMIT_BURST`); respons 429 menyertakan `Retry-After`.
+Endpoint publik dan pengguna dibatasi rate limit per IP (`RATE_LIMIT_RPS`, `RATE_LIMIT_BURST`; generate roadmap `ROADMAP_GENERATE_PER_MINUTE`); respons 429 menyertakan `Retry-After`. Endpoint admin tidak ikut dibatasi karena dilindungi token dan dipakai ingestion massal.
 
 ## Ingestion lowongan
 
@@ -72,6 +79,9 @@ docker compose exec ai-service python scripts/check_llm.py        # cek chat, JS
 docker compose exec ai-service python scripts/ingest_cli.py send --dry-run
 docker compose exec ai-service python scripts/ingest_cli.py send
 docker compose exec ai-service python scripts/ingest_cli.py status
+
+# sumber belajar terkurasi (data/resources/learning_resources.yaml)
+docker compose exec ai-service python scripts/ingest_cli.py resources --embed-missing
 
 # 3. validasi manual 20 lowongan (target akurasi ≥ 85%)
 docker compose exec ai-service python scripts/ingest_cli.py review -n 20

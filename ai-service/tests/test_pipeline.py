@@ -136,7 +136,7 @@ async def test_failure_marks_job_failed(db_url):
     finally:
         await pool.close()
     (status, err), = fetch(db_url, "SELECT extraction_status, extraction_error FROM job_postings WHERE id = %s", job_id)
-    assert status == "failed" and "ExtractionError" in err
+    assert status == "failed" and "tetap tidak valid" in err
 
 
 def test_internal_endpoint(db_url):

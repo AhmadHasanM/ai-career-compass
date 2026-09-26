@@ -7,8 +7,15 @@ from psycopg_pool import AsyncConnectionPool
 from src.embeddings.embedder import get_embedder
 from src.extraction.extractor import JobExtractor
 from src.ingestion.pipeline import JobProcessor
+from src.ingestion.resources import ResourceEmbedder
 from src.llm.client import OpenAICompatibleLLM
 from src.utils.config import get_settings
+
+
+@lru_cache
+def get_llm() -> OpenAICompatibleLLM:
+    """Melempar LLMNotConfiguredError jika .env belum diisi (tidak di-cache, jadi dicoba lagi nanti)."""
+    return OpenAICompatibleLLM(get_settings())
 
 
 @lru_cache
@@ -16,7 +23,7 @@ def get_extractor() -> JobExtractor:
     s = get_settings()
     cfg = s.pipeline.get("extraction", {})
     return JobExtractor(
-        OpenAICompatibleLLM(s),
+        get_llm(),
         max_retries=cfg.get("max_retries", 2),
         max_input_chars=cfg.get("max_input_chars", 12000),
         temperature=cfg.get("temperature", 0.0),
@@ -34,3 +41,7 @@ def build_processor(pool: AsyncConnectionPool) -> JobProcessor:
         chunk_overlap=p.get("chunking", {}).get("chunk_overlap", 100),
         concurrency=p.get("ingestion", {}).get("concurrency", 2),
     )
+
+
+def build_resource_embedder(pool: AsyncConnectionPool) -> ResourceEmbedder:
+    return ResourceEmbedder(pool, get_embedder)

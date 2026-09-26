@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -61,4 +62,13 @@ func (r *TaxonomyRepository) MissingSkillIDs(ctx context.Context, ids []int) ([]
 		return nil, err
 	}
 	return pgx.CollectRows(rows, pgx.RowTo[int])
+}
+
+func (r *TaxonomyRepository) SkillIDBySlug(ctx context.Context, slug string) (int, error) {
+	var id int
+	err := r.db.QueryRow(ctx, `SELECT id FROM skills WHERE slug = $1`, slug).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return 0, ErrNotFound
+	}
+	return id, err
 }

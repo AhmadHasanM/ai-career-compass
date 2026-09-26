@@ -22,6 +22,8 @@ type Config struct {
 	RateLimitBurst int
 	// Rate limit pembuatan sesi per IP, per menit.
 	SessionCreatePerMinute int
+	// Rate limit generate roadmap (memanggil LLM) per IP, per menit.
+	RoadmapGeneratePerMinute int
 }
 
 func Load() (*Config, error) {
@@ -47,6 +49,9 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	if cfg.SessionCreatePerMinute, err = getInt("SESSION_CREATE_PER_MINUTE", 10); err != nil {
+		return nil, err
+	}
+	if cfg.RoadmapGeneratePerMinute, err = getInt("ROADMAP_GENERATE_PER_MINUTE", 5); err != nil {
 		return nil, err
 	}
 	return cfg, nil
