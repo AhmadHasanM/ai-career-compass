@@ -7,6 +7,23 @@ import { Button, ErrorState, Field, Input, PageHeader, Panel, Select, Skeleton }
 import { api, ApiError, type Profile, type Role, type Skill } from "@/lib/api";
 import { useAsync } from "@/lib/use-async";
 
+// Urutan field di layar dan id input-nya, untuk fokus + ringkasan error.
+const FIELD_ORDER = ["education", "current_job", "target_role_id", "hours_per_week", "skills"] as const;
+const FIELD_INPUT: Record<(typeof FIELD_ORDER)[number], string> = {
+  education: "education",
+  current_job: "current_job",
+  target_role_id: "target_role",
+  hours_per_week: "hours",
+  skills: "skill-search",
+};
+const FIELD_LABEL: Record<string, string> = {
+  education: "Pendidikan terakhir",
+  current_job: "Pekerjaan saat ini",
+  target_role_id: "Target role",
+  hours_per_week: "Jam belajar per minggu",
+  skills: "Skill",
+};
+
 type FormState = {
   education: string;
   current_job: string;
@@ -72,7 +89,12 @@ export default function ProfilePage() {
       await api.generateRoadmap();
       router.push("/roadmap");
     } catch (err) {
-      if (err instanceof ApiError && err.fields) setFieldErrors(err.fields);
+      if (err instanceof ApiError && err.fields) {
+        setFieldErrors(err.fields);
+        // Error per field bisa berada di luar layar: fokuskan field pertama yang bermasalah.
+        const first = FIELD_ORDER.find((f) => err.fields?.[f] || (f === "skills" && Object.keys(err.fields ?? {}).some((k) => k.startsWith("skills"))));
+        if (first) document.getElementById(FIELD_INPUT[first])?.focus();
+      }
       setSubmitError({ error: err, phase });
       setStatus("idle");
     }
@@ -165,6 +187,14 @@ export default function ProfilePage() {
             <Button type="button" onClick={(e) => submit(e, false)} loading={status === "saving"} disabled={busy}>
               Simpan saja
             </Button>
+            {Object.keys(fieldErrors).length > 0 && (
+              <span role="alert" className="text-[13px] text-error">
+                Periksa isian:{" "}
+                {Object.entries(fieldErrors)
+                  .map(([k, msg]) => `${FIELD_LABEL[k] ?? (k.startsWith("skills") ? "Skill" : k)} ${msg}`)
+                  .join("; ")}
+              </span>
+            )}
             <span className="text-[13px] text-muted" role="status" aria-live="polite">
               {status === "generating"
                 ? "Mengurutkan skill dan meminta penjelasan tiap langkah (maks. ±20 detik)…"
