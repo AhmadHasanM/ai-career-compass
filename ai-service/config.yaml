@@ -1,0 +1,17 @@
+# Parameter pipeline RAG. Nilai rahasia (API key, DSN) tetap di .env.
+llm:
+  temperature: 0.2
+  max_tokens: 1024
+extraction:
+  temperature: 0.0
+  max_retries: 2
+chunking:
+  chunk_size: 800        # karakter
+  chunk_overlap: 100
+embedding:
+  batch_size: 32
+retrieval:
+  top_k: 8
+  rrf_k: 60              # konstanta Reciprocal Rank Fusion
+  vector_candidates: 30
+  keyword_candidates: 30

@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS skill_prerequisites;
+DROP TABLE IF EXISTS skill_aliases;
+DROP TABLE IF EXISTS skills;
+DROP TABLE IF EXISTS roles;
+DROP EXTENSION IF EXISTS vector;

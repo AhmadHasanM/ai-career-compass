@@ -1,0 +1,5 @@
+bin/
+tmp/
+*.test
+Dockerfile
+.dockerignore

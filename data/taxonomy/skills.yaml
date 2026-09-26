@@ -1,0 +1,483 @@
+# Skill taxonomy AI Career Compass.
+# - slug unik, kebab-case. Nama dan slug otomatis ikut jadi alias (lowercase) saat seeding.
+# - aliases: variasi penulisan di lowongan; harus lowercase dan unik di seluruh file.
+# - prerequisites: slug skill lain; harus membentuk DAG (seeder menolak siklus).
+# - category: language | framework | llm | ml | mlops | cloud | data
+
+version: 1
+
+roles:
+  - name: AI Engineer
+    slug: ai-engineer
+  - name: ML Engineer
+    slug: ml-engineer
+  - name: Data Scientist
+    slug: data-scientist
+
+skills:
+  # ---------- language ----------
+  - slug: python
+    name: Python
+    category: language
+    description: Bahasa utama ekosistem AI/ML dan backend data.
+    aliases: [python3, py]
+  - slug: sql
+    name: SQL
+    category: language
+    description: Query dan pengolahan data relasional.
+    aliases: [structured query language, t-sql, pl/sql]
+  - slug: javascript
+    name: JavaScript
+    category: language
+    description: Bahasa web untuk frontend dan Node.js.
+    aliases: [js, es6, ecmascript]
+  - slug: typescript
+    name: TypeScript
+    category: language
+    description: JavaScript dengan static typing.
+    aliases: [ts]
+    prerequisites: [javascript]
+  - slug: go
+    name: Go
+    category: language
+    description: Bahasa backend yang cepat dan sederhana untuk layanan API.
+    aliases: [golang]
+  - slug: java
+    name: Java
+    category: language
+    description: Bahasa enterprise, dipakai di beberapa pipeline data.
+    aliases: [java 8, java 11, java 17]
+  - slug: bash
+    name: Bash / Shell Scripting
+    category: language
+    description: Otomasi tugas di lingkungan Linux.
+    aliases: [shell, shell scripting, bash scripting]
+    prerequisites: [linux]
+  - slug: r
+    name: R
+    category: language
+    description: Bahasa statistik dan analisis data.
+    aliases: [r language, rstudio]
+
+  # ---------- framework ----------
+  - slug: fastapi
+    name: FastAPI
+    category: framework
+    description: Framework API Python berbasis type hint dan async.
+    aliases: [fast api]
+    prerequisites: [python, rest-api]
+  - slug: flask
+    name: Flask
+    category: framework
+    description: Micro-framework web Python.
+    prerequisites: [python, rest-api]
+  - slug: django
+    name: Django
+    category: framework
+    description: Framework web Python full-stack.
+    aliases: [django rest framework, drf]
+    prerequisites: [python, rest-api]
+  - slug: rest-api
+    name: REST API
+    category: framework
+    description: Desain dan konsumsi API berbasis HTTP.
+    aliases: [restful api, restful, rest, api development, web api]
+  - slug: nodejs
+    name: Node.js
+    category: framework
+    description: Runtime JavaScript di sisi server.
+    aliases: [node, node js, express, expressjs, express.js]
+    prerequisites: [javascript]
+  - slug: react
+    name: React
+    category: framework
+    description: Library UI berbasis komponen.
+    aliases: [reactjs, react.js, react js]
+    prerequisites: [javascript]
+  - slug: nextjs
+    name: Next.js
+    category: framework
+    description: Framework React untuk aplikasi web full-stack.
+    aliases: [next js, next]
+    prerequisites: [react]
+  - slug: streamlit
+    name: Streamlit / Gradio
+    category: framework
+    description: Membuat demo dan dashboard data atau model ML dengan Python.
+    aliases: [gradio]
+    prerequisites: [python]
+  - slug: pytorch
+    name: PyTorch
+    category: framework
+    description: Framework deep learning dengan komputasi dinamis.
+    aliases: [torch]
+    prerequisites: [python, deep-learning]
+  - slug: tensorflow
+    name: TensorFlow
+    category: framework
+    description: Framework deep learning dari Google.
+    aliases: [tf, tensorflow 2]
+    prerequisites: [python, deep-learning]
+  - slug: keras
+    name: Keras
+    category: framework
+    description: API high-level untuk deep learning.
+    prerequisites: [tensorflow]
+  - slug: scikit-learn
+    name: scikit-learn
+    category: framework
+    description: Library machine learning klasik di Python.
+    aliases: [sklearn, scikit learn]
+    prerequisites: [python, machine-learning]
+  - slug: huggingface-transformers
+    name: Hugging Face Transformers
+    category: framework
+    description: Library model pretrained untuk NLP, vision, dan audio.
+    aliases: [hugging face, huggingface, transformers library, hf transformers]
+    prerequisites: [pytorch, transformer-architecture]
+
+  # ---------- llm ----------
+  - slug: llm
+    name: Large Language Models
+    category: llm
+    description: Konsep dan pemakaian model bahasa besar.
+    aliases: [large language model, llms, generative ai, genai, gen ai]
+    prerequisites: [transformer-architecture]
+  - slug: prompt-engineering
+    name: Prompt Engineering
+    category: llm
+    description: Merancang prompt agar output LLM akurat dan konsisten.
+    aliases: [prompting, prompt design]
+    prerequisites: [llm]
+  - slug: llm-api
+    name: LLM API Integration
+    category: llm
+    description: Memanggil API LLM (OpenAI, Anthropic, Gemini, dan endpoint kompatibel).
+    aliases: [openai api, openai, chatgpt api, gpt api, anthropic api, claude api, gemini api]
+    prerequisites: [llm, rest-api]
+  - slug: embeddings
+    name: Embeddings
+    category: llm
+    description: Representasi vektor teks untuk pencarian semantik.
+    aliases: [text embeddings, embedding model, sentence embeddings, sentence transformers]
+    prerequisites: [llm]
+  - slug: semantic-search
+    name: Semantic Search
+    category: llm
+    description: Pencarian berbasis kemiripan makna, termasuk hybrid search.
+    aliases: [vector search, similarity search, hybrid search]
+    prerequisites: [embeddings]
+  - slug: rag
+    name: Retrieval-Augmented Generation
+    category: llm
+    description: Menggabungkan retrieval dokumen dengan generasi LLM.
+    aliases: [retrieval augmented generation, retrieval-augmented generation (rag)]
+    prerequisites: [semantic-search, prompt-engineering, vector-database]
+  - slug: langchain
+    name: LangChain
+    category: llm
+    description: Framework orkestrasi aplikasi LLM.
+    aliases: [lang chain]
+    prerequisites: [python, llm-api]
+  - slug: llamaindex
+    name: LlamaIndex
+    category: llm
+    description: Framework data dan indexing untuk aplikasi RAG.
+    aliases: [llama index, llama-index, gpt index]
+    prerequisites: [python, rag]
+  - slug: langgraph
+    name: LangGraph
+    category: llm
+    description: Orkestrasi agent berbasis graf di atas LangChain.
+    aliases: [lang graph]
+    prerequisites: [langchain, ai-agents]
+  - slug: function-calling
+    name: Function Calling / Tool Use
+    category: llm
+    description: LLM memanggil tool atau fungsi eksternal dengan output terstruktur.
+    aliases: [tool use, tool calling, structured output, json mode]
+    prerequisites: [llm-api]
+  - slug: ai-agents
+    name: AI Agents
+    category: llm
+    description: Sistem LLM yang merencanakan dan menjalankan tool secara otonom.
+    aliases: [agentic ai, llm agents, autonomous agents, multi-agent, agent]
+    prerequisites: [function-calling]
+  - slug: llm-fine-tuning
+    name: LLM Fine-tuning
+    category: llm
+    description: Menyesuaikan LLM dengan data domain (SFT, instruction tuning).
+    aliases: [fine-tuning, fine tuning, finetuning, sft, instruction tuning]
+    prerequisites: [llm, pytorch]
+  - slug: peft
+    name: PEFT / LoRA
+    category: llm
+    description: Fine-tuning hemat parameter seperti LoRA dan QLoRA.
+    aliases: [lora, qlora, parameter-efficient fine-tuning]
+    prerequisites: [llm-fine-tuning, huggingface-transformers]
+  - slug: llm-evaluation
+    name: LLM Evaluation
+    category: llm
+    description: Mengukur kualitas output LLM dan RAG (faithfulness, relevance).
+    aliases: [llm eval, rag evaluation, ragas, llm-as-a-judge, deepeval]
+    prerequisites: [llm]
+  - slug: llm-observability
+    name: LLM Observability
+    category: llm
+    description: Tracing prompt, token, latensi, dan biaya aplikasi LLM.
+    aliases: [langfuse, langsmith, llm monitoring, llmops]
+    prerequisites: [llm-api]
+  - slug: guardrails
+    name: LLM Guardrails & Safety
+    category: llm
+    description: Validasi input/output dan mitigasi prompt injection serta halusinasi.
+    aliases: [ai safety, llm safety, prompt injection, responsible ai, nemo guardrails]
+    prerequisites: [prompt-engineering]
+  - slug: llm-serving
+    name: LLM Serving & Inference
+    category: llm
+    description: Menjalankan model open-source secara efisien (vLLM, Ollama, TGI).
+    aliases: [vllm, ollama, tgi, text generation inference, llama.cpp, model quantization, quantization]
+    prerequisites: [llm, docker]
+
+  # ---------- ml ----------
+  - slug: machine-learning
+    name: Machine Learning
+    category: ml
+    description: Algoritma supervised dan unsupervised learning.
+    aliases: [ml, machine learning algorithms, pembelajaran mesin]
+    prerequisites: [python, statistics, linear-algebra]
+  - slug: deep-learning
+    name: Deep Learning
+    category: ml
+    description: Neural network multi-layer (CNN, RNN, dan lainnya).
+    aliases: [dl, neural networks, neural network, ann, cnn, rnn, lstm]
+    prerequisites: [machine-learning]
+  - slug: nlp
+    name: Natural Language Processing
+    category: ml
+    description: Pemrosesan bahasa alami seperti klasifikasi teks dan NER.
+    aliases: [natural language processing, text mining, text classification, ner]
+    prerequisites: [machine-learning]
+  - slug: computer-vision
+    name: Computer Vision
+    category: ml
+    description: Pengolahan gambar dan video (deteksi, segmentasi).
+    aliases: [cv, image processing, opencv, object detection, yolo]
+    prerequisites: [deep-learning]
+  - slug: transformer-architecture
+    name: Transformer Architecture
+    category: ml
+    description: Arsitektur attention yang mendasari LLM modern.
+    aliases: [transformer, transformers, attention mechanism, bert, self-attention]
+    prerequisites: [deep-learning, nlp]
+  - slug: statistics
+    name: Statistics & Probability
+    category: ml
+    description: Statistik deskriptif, inferensial, dan probabilitas.
+    aliases: [statistics, statistik, probability, probabilitas, hypothesis testing, a/b testing]
+  - slug: linear-algebra
+    name: Linear Algebra & Calculus
+    category: ml
+    description: Matematika dasar untuk ML (vektor, matriks, gradien).
+    aliases: [linear algebra, aljabar linear, calculus, kalkulus, mathematics for ml]
+  - slug: feature-engineering
+    name: Feature Engineering
+    category: ml
+    description: Membentuk fitur dari data mentah untuk model.
+    aliases: [feature selection, data preprocessing, preprocessing]
+    prerequisites: [pandas, machine-learning]
+  - slug: model-evaluation
+    name: Model Evaluation
+    category: ml
+    description: Metrik, validasi silang, dan analisis error model.
+    aliases: [model validation, cross-validation, evaluation metrics, hyperparameter tuning]
+    prerequisites: [machine-learning]
+  - slug: recommender-systems
+    name: Recommender Systems
+    category: ml
+    description: Sistem rekomendasi collaborative dan content-based.
+    aliases: [recommendation system, recommendation engine, sistem rekomendasi]
+    prerequisites: [machine-learning]
+  - slug: time-series
+    name: Time Series Forecasting
+    category: ml
+    description: Analisis dan peramalan data deret waktu.
+    aliases: [forecasting, time series analysis, arima, prophet]
+    prerequisites: [statistics, machine-learning]
+
+  # ---------- mlops ----------
+  - slug: git
+    name: Git
+    category: mlops
+    description: Version control dan kolaborasi kode.
+    aliases: [github, gitlab, version control, bitbucket]
+  - slug: linux
+    name: Linux
+    category: mlops
+    description: Administrasi dan penggunaan sistem operasi Linux.
+    aliases: [ubuntu, unix, centos]
+  - slug: docker
+    name: Docker
+    category: mlops
+    description: Containerization aplikasi dan model.
+    aliases: [containerization, container, docker compose, docker-compose]
+    prerequisites: [linux]
+  - slug: kubernetes
+    name: Kubernetes
+    category: mlops
+    description: Orkestrasi container di skala produksi.
+    aliases: [k8s, helm, eks, gke, aks]
+    prerequisites: [docker]
+  - slug: ci-cd
+    name: CI/CD
+    category: mlops
+    description: Otomasi build, test, dan deploy.
+    aliases: [cicd, ci cd, continuous integration, continuous deployment, github actions, gitlab ci, jenkins]
+    prerequisites: [git]
+  - slug: model-deployment
+    name: Model Deployment
+    category: mlops
+    description: Menyajikan model ML sebagai layanan produksi.
+    aliases: [model serving, ml deployment, deploy model, inference api, bentoml, torchserve]
+    prerequisites: [docker, rest-api]
+  - slug: mlflow
+    name: MLflow
+    category: mlops
+    description: Experiment tracking dan model registry.
+    aliases: [ml flow, experiment tracking, model registry, weights & biases, weights and biases, wandb, w&b]
+    prerequisites: [machine-learning]
+  - slug: mlops
+    name: MLOps
+    category: mlops
+    description: Praktik operasional siklus hidup model ML.
+    aliases: [ml ops, machine learning operations, kubeflow]
+    prerequisites: [model-deployment, ci-cd, mlflow]
+  - slug: monitoring
+    name: Monitoring & Observability
+    category: mlops
+    description: Metrik, logging, dan alerting layanan produksi.
+    aliases: [observability, prometheus, grafana, logging, model monitoring]
+    prerequisites: [linux]
+  - slug: airflow
+    name: Apache Airflow
+    category: mlops
+    description: Orkestrasi workflow dan pipeline terjadwal.
+    aliases: [apache airflow, workflow orchestration, prefect, dagster]
+    prerequisites: [python, etl]
+
+  # ---------- cloud ----------
+  - slug: aws
+    name: AWS
+    category: cloud
+    description: Layanan cloud Amazon (EC2, S3, Lambda).
+    aliases: [amazon web services, ec2, s3, lambda, aws lambda]
+  - slug: gcp
+    name: Google Cloud Platform
+    category: cloud
+    description: Layanan cloud Google (Compute, Cloud Run, GCS).
+    aliases: [google cloud, google cloud platform, cloud run, gcs]
+  - slug: azure
+    name: Microsoft Azure
+    category: cloud
+    description: Layanan cloud Microsoft.
+    aliases: [microsoft azure, azure cloud]
+  - slug: aws-sagemaker
+    name: AWS SageMaker
+    category: cloud
+    description: Platform ML terkelola di AWS.
+    aliases: [sagemaker, amazon sagemaker, aws bedrock, bedrock]
+    prerequisites: [aws, machine-learning]
+  - slug: vertex-ai
+    name: Vertex AI
+    category: cloud
+    description: Platform ML dan generative AI di Google Cloud.
+    aliases: [google vertex ai, vertexai]
+    prerequisites: [gcp, machine-learning]
+  - slug: azure-openai
+    name: Azure OpenAI & Azure ML
+    category: cloud
+    description: Layanan AI dan ML terkelola di Azure.
+    aliases: [azure openai service, azure ml, azure machine learning, azure ai]
+    prerequisites: [azure, llm-api]
+
+  # ---------- data ----------
+  - slug: pandas
+    name: Pandas
+    category: data
+    description: Manipulasi dan analisis data tabular di Python.
+    aliases: [dataframe]
+    prerequisites: [python]
+  - slug: numpy
+    name: NumPy
+    category: data
+    description: Komputasi numerik dan array di Python.
+    prerequisites: [python]
+  - slug: data-visualization
+    name: Data Visualization
+    category: data
+    description: Visualisasi data dan dashboard.
+    aliases: [visualisasi data, matplotlib, seaborn, plotly, tableau, power bi, looker]
+    prerequisites: [pandas]
+  - slug: postgresql
+    name: PostgreSQL
+    category: data
+    description: Database relasional open-source.
+    aliases: [postgres, psql]
+    prerequisites: [sql]
+  - slug: mysql
+    name: MySQL
+    category: data
+    description: Database relasional populer.
+    aliases: [mariadb]
+    prerequisites: [sql]
+  - slug: mongodb
+    name: MongoDB
+    category: data
+    description: Database dokumen NoSQL.
+    aliases: [mongo, nosql]
+  - slug: redis
+    name: Redis
+    category: data
+    description: In-memory store untuk cache dan antrean.
+    aliases: [caching, cache]
+  - slug: vector-database
+    name: Vector Database
+    category: data
+    description: Penyimpanan dan pencarian vektor (pgvector, Pinecone, Qdrant, dan lainnya).
+    aliases: [vector db, vector store, vectordb, pgvector, pinecone, qdrant, weaviate, milvus, chroma, chromadb, faiss]
+    prerequisites: [embeddings]
+  - slug: elasticsearch
+    name: Elasticsearch
+    category: data
+    description: Mesin full-text search dan analitik.
+    aliases: [elastic search, opensearch, elk]
+  - slug: etl
+    name: ETL / Data Pipeline
+    category: data
+    description: Ekstraksi, transformasi, dan pemuatan data.
+    aliases: [elt, data pipeline, data pipelines, data engineering, dbt]
+    prerequisites: [sql, python]
+  - slug: spark
+    name: Apache Spark
+    category: data
+    description: Pemrosesan data terdistribusi.
+    aliases: [apache spark, pyspark, databricks, hadoop, big data]
+    prerequisites: [etl]
+  - slug: bigquery
+    name: BigQuery
+    category: data
+    description: Data warehouse serverless di Google Cloud.
+    aliases: [google bigquery, data warehouse, snowflake, redshift]
+    prerequisites: [sql]
+  - slug: kafka
+    name: Apache Kafka
+    category: data
+    description: Streaming data dan message broker.
+    aliases: [apache kafka, message queue, rabbitmq, pub/sub, streaming]
+  - slug: web-scraping
+    name: Web Scraping
+    category: data
+    description: Mengambil data dari halaman web secara terprogram.
+    aliases: [scraping, beautifulsoup, scrapy, selenium, playwright]
+    prerequisites: [python]
