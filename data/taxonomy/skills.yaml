@@ -133,7 +133,7 @@ skills:
     name: Hugging Face Transformers
     category: framework
     description: Library model pretrained untuk NLP, vision, dan audio.
-    aliases: [hugging face, huggingface, transformers library, hf transformers]
+    aliases: [hugging face, huggingface, transformers library, hf transformers, huggingface transformers]
     prerequisites: [pytorch, transformer-architecture]
 
   # ---------- llm ----------
@@ -207,7 +207,7 @@ skills:
     name: LLM Fine-tuning
     category: llm
     description: Menyesuaikan LLM dengan data domain (SFT, instruction tuning).
-    aliases: [fine-tuning, fine tuning, finetuning, sft, instruction tuning]
+    aliases: [fine-tuning, fine tuning, finetuning, sft, instruction tuning, fine-tuning llm, llm fine-tuning, fine tuning llm]
     prerequisites: [llm, pytorch]
   - slug: peft
     name: PEFT / LoRA

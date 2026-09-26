@@ -1,17 +1,26 @@
-# Parameter pipeline RAG. Nilai rahasia (API key, DSN) tetap di .env.
+# Parameter pipeline RAG. Nilai rahasia (API key, DSN) dan nama model tetap di .env.
 llm:
   temperature: 0.2
   max_tokens: 1024
+  timeout_seconds: 60
+  max_retries: 3            # retry SDK untuk 429 / 5xx / timeout
+  # Model "thinking" (mis. gemini-2.5-flash) menghabiskan max_tokens untuk reasoning sehingga jawaban
+  # terpotong. "none" mematikannya; isi null untuk model yang tidak mengenal parameter ini.
+  reasoning_effort: none
 extraction:
   temperature: 0.0
-  max_retries: 2
+  max_tokens: 1500
+  max_retries: 2            # percobaan ulang jika JSON dari LLM tidak valid
+  max_input_chars: 12000    # teks lowongan dipotong agar prompt tidak membengkak
 chunking:
-  chunk_size: 800        # karakter
+  chunk_size: 800           # karakter
   chunk_overlap: 100
 embedding:
   batch_size: 32
+ingestion:
+  concurrency: 2            # lowongan yang diproses paralel
 retrieval:
   top_k: 8
-  rrf_k: 60              # konstanta Reciprocal Rank Fusion
+  rrf_k: 60                 # konstanta Reciprocal Rank Fusion
   vector_candidates: 30
   keyword_candidates: 30

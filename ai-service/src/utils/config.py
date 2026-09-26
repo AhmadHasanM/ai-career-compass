@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -25,6 +26,16 @@ class Settings(BaseSettings):
     embedding_dim: int = 768
 
     config_path: Path = BASE_DIR / "config.yaml"
+
+    @field_validator("llm_base_url")
+    @classmethod
+    def _strip_endpoint_path(cls, v: str) -> str:
+        """SDK OpenAI menambahkan /chat/completions sendiri; buang jika URL endpoint lengkap yang ditempel."""
+        v = v.strip().rstrip("/")
+        for suffix in ("/chat/completions", "/completions", "/embeddings"):
+            if v.endswith(suffix):
+                return v[: -len(suffix)]
+        return v
 
     @property
     def pipeline(self) -> dict[str, Any]:

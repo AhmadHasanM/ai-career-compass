@@ -42,15 +42,54 @@ docker compose run --rm seed                         # seed ulang taxonomy (idem
 `skill_demand` adalah materialized view yang di-refresh setelah setiap ingestion:
 `REFRESH MATERIALIZED VIEW CONCURRENTLY skill_demand;`
 
+## API backend
+
+Semua error berbentuk `{"error": {"code", "message", "fields?"}}`. Endpoint pengguna butuh header `X-Session-Id` (dari `POST /api/sessions`); endpoint admin butuh `X-Admin-Token`.
+
+| Method | Path | Auth | Keterangan |
+| --- | --- | --- | --- |
+| GET | `/health` | - | Status service + database |
+| POST | `/api/sessions` | - | Buat sesi anonim (dibatasi per IP per menit) |
+| GET | `/api/roles` | - | Daftar role target |
+| GET | `/api/skills?category=` | - | Taxonomy + alias + prerequisite |
+| GET / PUT | `/api/profile` | sesi | Profil + skill; PUT mengganti seluruh profil |
+| POST | `/api/admin/jobs` | admin | Tambah lowongan (status `pending`); 409 jika `source_url` sudah ada |
+
+Seluruh `/api` dibatasi rate limit per IP (`RATE_LIMIT_RPS`, `RATE_LIMIT_BURST`); respons 429 menyertakan `Retry-After`.
+
+## Ingestion lowongan
+
+Alur: `ingest_cli send` → `POST /api/admin/jobs` (Go, simpan `pending`) → `POST /internal/jobs/{id}/process` (ai-service, 202) →
+di background: ekstraksi LLM → normalisasi skill ke taxonomy → chunking per bagian → embedding → `document_chunks` → refresh `skill_demand`.
+
+Status akhir: `done` (role AI/ML + ada skill cocok), `review` (role lain atau tidak ada skill cocok), `failed` (lihat `extraction_error`).
+
+```bash
+# 1. isi LLM_BASE_URL, LLM_API_KEY, LLM_MODEL di .env, lalu restart ai-service
+docker compose exec ai-service python scripts/check_llm.py        # cek chat, JSON mode, embedding
+
+# 2. kirim lowongan dan pantau
+docker compose exec ai-service python scripts/ingest_cli.py send --dry-run
+docker compose exec ai-service python scripts/ingest_cli.py send
+docker compose exec ai-service python scripts/ingest_cli.py status
+
+# 3. validasi manual 20 lowongan (target akurasi ≥ 85%)
+docker compose exec ai-service python scripts/ingest_cli.py review -n 20
+docker compose cp ai-service:/app/logs/extraction_review.md .
+```
+
+Embedding default memakai `intfloat/multilingual-e5-base` lokal (diunduh ±1 GB saat pertama dipakai, disimpan di volume `hf_cache`). Jika `check_llm.py` menunjukkan endpoint menyediakan model embedding 768 dimensi, set `EMBEDDING_PROVIDER=api` dan `EMBEDDING_MODEL`.
+
 ## Pengembangan lokal
 
 ```bash
-# backend
-cd backend && go test ./... && go run ./seed -dry-run -file ../data/taxonomy/skills.yaml
+# backend (test butuh container db jalan; membuat database compass_test otomatis)
+cd backend && make test
+go run ./seed -dry-run -file ../data/taxonomy/skills.yaml
 
 # ai-service
 cd ai-service && uv venv .venv && uv pip install -p .venv -r requirements-dev.txt
-.venv/bin/python -m pytest
+.venv/bin/python -m pytest                      # test DB: set TEST_DATABASE_URL seperti di backend/Makefile
 .venv/bin/python scripts/validate_raw_jobs.py   # cek data/raw_jobs/
 
 # frontend
