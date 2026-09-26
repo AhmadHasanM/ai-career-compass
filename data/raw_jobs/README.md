@@ -2,6 +2,22 @@
 
 Target Sprint 1: **minimal 50 lowongan AI Engineer di Indonesia**, dikumpulkan manual.
 
+## Cara cepat: `add_job`
+
+1. Buka halaman **detail** lowongan di browser (bukan halaman hasil pencarian), `Ctrl+A`, `Ctrl+C`.
+2. Jalankan di terminal:
+
+   ```bash
+   cd ai-service
+   .venv/bin/python scripts/add_job.py
+   ```
+
+3. Jawab pertanyaan singkat (URL, perusahaan, lokasi, dll.; Enter untuk melewati yang opsional).
+   Sumber terdeteksi otomatis dari URL, `collected_at` terisi tanggal hari ini, URL duplikat ditolak.
+
+Clipboard dibaca lewat `wl-paste` (Wayland: `sudo apt install wl-clipboard`) atau `xclip`/`xsel`.
+Tanpa itu, jalankan dengan `--paste` lalu tempel teks di terminal dan tekan `Ctrl+D`.
+
 ## Format
 
 Satu lowongan = satu file `.md`: front matter YAML + teks lowongan apa adanya. Salin `_TEMPLATE.md`.
