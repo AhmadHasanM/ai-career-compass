@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Token dari DESIGN.md (Evidence Ledger). Hanya mode terang: desain tidak mendefinisikan tema gelap. */
+@theme {
+  --color-paper: #f7f6f2;
+  --color-surface: #ffffff;
+  --color-sunken: #efede7;
+  --color-line: #e2dfd7;
+  --color-line-strong: #c9c5ba;
+  --color-ink: #16181d;
+  --color-ink-2: #3d424b;
+  --color-muted: #5e6470;
+  --color-compass: #1e6b52;
+  --color-compass-strong: #17563f;
+  --color-compass-soft: #e4efea;
+  --color-gap: #9a5b0b;
+  --color-gap-strong: #7a4508;
+  --color-gap-soft: #f6ebda;
+  --color-error: #a83a32;
+  --color-error-soft: #f7e4e2;
+
+  --radius-chip: 4px;
+  --radius-control: 6px;
+  --radius-panel: 8px;
+
+  --shadow-popover: 0 4px 16px rgba(22, 24, 29, 0.08);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Di dalam @layer base: aturan tanpa layer akan mengalahkan utility Tailwind (mis. text-ink pada link). */
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 24px;
+  }
+
+  a {
+    color: var(--color-compass);
+  }
+  a:hover {
+    color: var(--color-compass-strong);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Angka: tabular figures (DESIGN.md: data) */
+.font-mono,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fokus keyboard: border aksen + ring 3 px compass-soft */
+:focus-visible {
+  outline: 2px solid var(--color-compass);
+  outline-offset: 2px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.skeleton {
+  background: var(--color-sunken);
+  border-radius: var(--radius-chip);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
 }
