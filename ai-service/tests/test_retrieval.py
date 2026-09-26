@@ -17,6 +17,8 @@ def test_build_tsquery_drops_stopwords_and_uses_or():
         "skill | dicari | ai | engineer | jakarta"
     assert build_tsquery("apa yang?") is None
     assert build_tsquery("Python python PYTHON") == "python"
+    # kata domain umum dibuang agar kata pembeda (rag) menentukan peringkat
+    assert build_tsquery("Rekomendasikan sumber belajar gratis untuk memulai RAG.") == "rag"
     # karakter berbahaya untuk to_tsquery tidak pernah lolos
     assert build_tsquery("rag & (docker | !k8s) 'x'") == "rag | docker | k8s"
 

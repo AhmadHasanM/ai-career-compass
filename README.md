@@ -24,7 +24,7 @@ flowchart LR
   BE -->|REST + X-Internal-Token| AI["ai-service<br/>FastAPI"]
   BE --> DB[("PostgreSQL 16<br/>+ pgvector")]
   AI --> DB
-  AI -->|OpenAI-compatible| LLM["LLM<br/>(Gemini)"]
+  AI -->|OpenAI-compatible| LLM["LLM<br/>(Groq · gpt-oss-120b)"]
   AI --> EMB["multilingual-e5-base<br/>(lokal, CPU)"]
 ```
 
@@ -68,8 +68,8 @@ Service sekali jalan: `migrate` (golang-migrate) dan `seed` (taxonomy dari `data
 | --- | --- | --- |
 | Isi profil → roadmap tampil (browser, Gemini) | 5.1 detik | ≤ 30 detik |
 | Generate roadmap saat ai-service mati (fallback) | 0.2 detik | tetap jadi |
-| Latensi jawaban chat (5 jawaban Gemini) | 1.9–3.0 detik | p95 ≤ 8 detik |
-| Acceptance criteria MVP di browser (Playwright) | 11/11 cek lolos untuk AC1–AC3 dan penanganan error. AC4 (sitasi bisa diklik) dan AC5 (penolakan di luar domain) **belum terverifikasi di browser**: kuota Gemini habis saat uji; logikanya lolos di test otomatis | semua |
+| Latensi jawaban chat lewat `/api/chat` (Groq `gpt-oss-120b`) | token pertama 0.7–1.9 detik, total 1.5–2.3 detik | p95 ≤ 8 detik |
+| Acceptance criteria MVP di browser (Playwright) | 11/11 cek lolos untuk AC1–AC3 dan penanganan error. AC4 (sitasi) dan AC5 (penolakan di luar domain) terverifikasi lewat API dengan Groq; **belum diuji ulang di browser** | semua |
 | Test otomatis | 71 test Go (+ race detector), 77 test Python | lolos |
 | Akurasi ekstraksi skill | **[BELUM DIUKUR]** — butuh validasi manual 20 lowongan nyata (`ingest_cli review`) | ≥ 85% |
 
@@ -82,8 +82,9 @@ docker compose up -d --build  # db -> migrate -> seed -> backend, ai-service, fr
 
 Buka http://localhost:3000. Cek kesehatan: `curl localhost:8080/health`, `curl localhost:3000/health`.
 
-LLM memakai endpoint OpenAI-compatible, misal Gemini: `LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`,
-`LLM_MODEL=gemini-2.5-flash`. Untuk model "thinking", `reasoning_effort: none` di `ai-service/config.yaml` mencegah jawaban kosong.
+LLM memakai endpoint OpenAI-compatible. Default: Groq (`LLM_BASE_URL=https://api.groq.com/openai/v1`,
+`LLM_MODEL=openai/gpt-oss-120b`, free tier ±1.000 request/hari dan 8.000 token/menit). `reasoning_effort` di
+`ai-service/config.yaml` menjaga model reasoning tetap hemat token; parameter opsional yang ditolak model dikirim ulang tanpanya.
 
 ### Mengisi data
 
@@ -97,7 +98,7 @@ docker compose exec ai-service python scripts/ingest_cli.py send
 docker compose exec ai-service python scripts/ingest_cli.py status
 
 # 3. sumber belajar terkurasi (98 sumber, URL dicek) dan evaluasi
-docker compose exec ai-service python scripts/ingest_cli.py resources --embed-missing
+docker compose exec ai-service python scripts/ingest_cli.py resources --embed-missing   # --reembed-all setelah format teks berubah
 docker compose exec ai-service python scripts/ingest_cli.py review -n 20   # validasi manual ekstraksi
 docker compose exec ai-service python scripts/ask_cli.py                  # 20 pertanyaan uji chatbot
 ```
@@ -139,8 +140,8 @@ Test Go dan Python memakai migrasi asli dan advisory lock yang sama, sehingga bi
 ## Keterbatasan yang diketahui
 
 - **Data**: statistik baru bermakna setelah ≥ 30 lowongan nyata terkumpul; UI menampilkan peringatan sampel kecil di bawah itu.
-- **Kuota LLM**: free tier Gemini `gemini-2.5-flash` terbatas (5 request/menit dan kuota harian kecil); ingestion 50 lowongan + demo
-  butuh tier berbayar atau ingestion bertahap. UI menampilkan pesan jelas saat kuota habis.
+- **Kuota LLM**: free tier Groq ±1.000 request/hari dan 8.000 token/menit (±8 ekstraksi atau ±2 jawaban chat per menit);
+  SDK mengulang otomatis saat 429 dan UI menampilkan pesan jelas saat kuota habis. Gemini free tier (±20 request/hari) tidak cukup.
 - **Observability**: setiap query chat dicatat sebagai log JSON (pertanyaan, chunk + rank, sitasi, latensi, token); integrasi Langfuse
   menunggu kunci.
 - **Rate limit** disimpan in-memory; cukup untuk satu instance backend.

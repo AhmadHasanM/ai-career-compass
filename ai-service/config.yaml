@@ -4,9 +4,10 @@ llm:
   max_tokens: 1024
   timeout_seconds: 60
   max_retries: 3            # retry SDK untuk 429 / 5xx / timeout
-  # Model "thinking" (mis. gemini-2.5-flash) menghabiskan max_tokens untuk reasoning sehingga jawaban
-  # terpotong. "none" mematikannya; isi null untuk model yang tidak mengenal parameter ini.
-  reasoning_effort: none
+  # Model reasoning menghabiskan max_tokens untuk "berpikir" sehingga jawaban bisa terpotong; nilai rendah
+  # menjaganya tetap hemat. Nilai valid tergantung model (Groq gpt-oss: low/medium/high; Gemini: none/low/…).
+  # Jika model menolak parameter ini, client otomatis mengirim ulang tanpanya.
+  reasoning_effort: low
 extraction:
   temperature: 0.0
   max_tokens: 1500

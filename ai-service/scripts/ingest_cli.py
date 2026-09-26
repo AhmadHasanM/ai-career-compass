@@ -135,13 +135,14 @@ def cmd_resources(args: argparse.Namespace) -> int:
                 counts["error"] += 1
                 print(f"✗ {item['title']}: {r.status_code} {r.text[:300]}")
     print(", ".join(f"{k} {v}" for k, v in sorted(counts.items())) + f" dari {len(items)} sumber belajar")
-    if args.embed_missing:
-        asyncio.run(embed_missing_resources())
+    if args.embed_missing or args.reembed_all:
+        asyncio.run(embed_missing_resources(all_resources=args.reembed_all))
     return 1 if counts["error"] else 0
 
 
-async def embed_missing_resources() -> None:
-    """Embed langsung (di proses ini) sumber belajar yang belum punya chunk, misal karena pemicu gagal."""
+async def embed_missing_resources(all_resources: bool = False) -> None:
+    """Embed langsung (di proses ini) sumber belajar yang belum punya chunk (misal pemicu gagal),
+    atau semuanya jika all_resources (setelah format teks embedding berubah)."""
     from src.embeddings.embedder import get_embedder
     from src.ingestion.resources import ResourceEmbedder
     from src.utils.db import close_pool, open_pool
@@ -150,12 +151,13 @@ async def embed_missing_resources() -> None:
     try:
         async with pool.connection() as conn:
             cur = await conn.execute(
-                """SELECT r.id FROM learning_resources r WHERE NOT EXISTS (
+                """SELECT r.id FROM learning_resources r WHERE %s OR NOT EXISTS (
                        SELECT 1 FROM document_chunks c
-                       WHERE c.source_type = 'learning_resource' AND c.source_id = r.id)"""
+                       WHERE c.source_type = 'learning_resource' AND c.source_id = r.id)""",
+                (all_resources,),
             )
             ids = [row[0] for row in await cur.fetchall()]
-        print(f"{len(ids)} sumber belajar belum ter-embed")
+        print(f"{len(ids)} sumber belajar akan di-embed")
         embedder = ResourceEmbedder(pool, get_embedder)
         for i, rid in enumerate(ids, 1):
             await embedder.embed(rid)
@@ -275,6 +277,8 @@ def main() -> int:
     rs.add_argument("--backend", default=DEFAULT_BACKEND)
     rs.add_argument("--embed-missing", action="store_true",
                     help="setelah kirim, embed langsung sumber belajar yang belum punya chunk")
+    rs.add_argument("--reembed-all", action="store_true",
+                    help="embed ulang semua sumber belajar (setelah format teks embedding berubah)")
     rs.set_defaults(func=cmd_resources)
 
     args = p.parse_args()

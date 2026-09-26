@@ -48,7 +48,12 @@ sedikit mau ingin jadi menjadi tidak bukan ya nya lah kah pun saja hanya masih l
 the a an and or of to in on for with is are was were be been being what which who how why when where
 do does did can could should would will i you we they it this that these those my your our as at by
 from about into than then there their some any all more most much many not no yes
-""".split())
+""".split()) | frozenset(
+    # Kata domain yang muncul di hampir semua pertanyaan / dokumen sumber belajar: tanpa IDF di
+    # ts_rank_cd, kata-kata ini menenggelamkan kata pembeda seperti "rag" atau "fastapi".
+    """rekomendasikan rekomendasi sarankan saran tolong minta sumber belajar mempelajari pelajari
+    memulai mulai cara bagus terbaik gratis free resource resources learn learning""".split()
+)
 
 _TOKEN = re.compile(r"[a-z0-9]+")
 

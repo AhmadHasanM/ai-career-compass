@@ -24,9 +24,9 @@ async def main() -> int:
     print(f"LLM_BASE_URL={s.llm_base_url or '(kosong)'}  LLM_MODEL={s.llm_model or '(kosong)'}")
     try:
         llm = OpenAICompatibleLLM(s)
-        r = await llm.chat([{"role": "user", "content": "Balas satu kata: siap"}], max_tokens=10)
+        r = await llm.chat([{"role": "user", "content": "Balas satu kata: siap"}], max_tokens=300)
         print(f"✓ chat: {r.content.strip()!r} ({r.model}, {r.latency_ms} ms)")
-        r = await llm.chat([{"role": "user", "content": 'Balas JSON {"ok": true}'}], max_tokens=20, json_mode=True)
+        r = await llm.chat([{"role": "user", "content": 'Balas JSON {"ok": true}'}], max_tokens=300, json_mode=True)
         mode = "didukung" if llm._json_mode_supported else "tidak didukung (pakai instruksi prompt)"
         print(f"✓ JSON mode {mode}: {r.content.strip()[:60]!r}")
     except LLMNotConfiguredError as e:

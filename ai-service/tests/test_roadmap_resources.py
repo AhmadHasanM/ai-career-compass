@@ -91,7 +91,7 @@ def test_internal_roadmap_and_resource_endpoints(db_url):
     assert len(row) == 1
     section, dim, slug, content = row[0]
     assert (section, dim, slug) == ("resource", 768, "python")
-    assert "Sumber belajar Python" in content and "Estimasi 10 jam" in content
+    assert content.startswith("Python Tutorial\nMateri Python") and "±10 jam" in content
 
 
 def test_roadmap_explain_returns_503_without_llm(db_url, monkeypatch):
