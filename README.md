@@ -59,6 +59,8 @@ Semua error berbentuk `{"error": {"code", "message", "fields?"}}`. Endpoint peng
 | POST | `/api/roadmap/generate` | sesi | Roadmap baru: topological sort di Go, alasan + estimasi dari LLM (fallback jika gagal) |
 | GET | `/api/roadmap` | sesi | Roadmap terbaru + edge prasyarat + sumber belajar per node |
 | GET | `/api/resources?skill_id=` | - | Sumber belajar per skill |
+| POST | `/api/chat` | sesi | Chat RAG, respons SSE: `token` berulang lalu `done` (jawaban, sitasi lengkap, usage) atau `error` |
+| GET | `/api/chat/history?limit=` | sesi | Riwayat chat beserta sitasi |
 | POST | `/api/admin/jobs` | admin | Tambah lowongan (status `pending`); 409 jika `source_url` sudah ada |
 | POST | `/api/admin/resources` | admin | Tambah sumber belajar (`skill_id` atau `skill_slug`) lalu embed |
 
@@ -86,6 +88,18 @@ docker compose exec ai-service python scripts/ingest_cli.py resources --embed-mi
 # 3. validasi manual 20 lowongan (target akurasi ≥ 85%)
 docker compose exec ai-service python scripts/ingest_cli.py review -n 20
 docker compose cp ai-service:/app/logs/extraction_review.md .
+```
+
+## Chat RAG
+
+`POST /api/chat` → Go menyusun konteks (profil, 5 gap teratas, roadmap, statistik pasar, 6 pesan terakhir) → `POST /internal/chat` →
+hybrid retrieval (pgvector + full-text OR-query, digabung Reciprocal Rank Fusion, top-k 6) → prompt dengan sumber bernomor `[n]` →
+stream jawaban. Go meneruskan tiap event SSE (flush per event) dan menyimpan pertanyaan + jawaban + sitasi saat event `done`.
+Setiap query dicatat sebagai log JSON `chat` (pertanyaan, chunk ter-retrieve + rank, sitasi, latensi, token).
+
+```bash
+docker compose exec ai-service python scripts/ask_cli.py      # 20 pertanyaan uji (data/eval/chat_questions.yaml)
+docker compose cp ai-service:/app/logs/chat_review.md .       # lembar penilaian manual
 ```
 
 Embedding default memakai `intfloat/multilingual-e5-base` lokal (diunduh ±1 GB saat pertama dipakai, disimpan di volume `hf_cache`). Jika `check_llm.py` menunjukkan endpoint menyediakan model embedding 768 dimensi, set `EMBEDDING_PROVIDER=api` dan `EMBEDDING_MODEL`.

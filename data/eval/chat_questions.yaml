@@ -1,0 +1,41 @@
+# Pertanyaan uji awal chatbot (S5-T6). Dijalankan lewat:
+#   docker compose exec ai-service python scripts/ask_cli.py
+# expect: jenis jawaban yang diharapkan, untuk penilaian manual
+#   cited      = harus menyitir sumber (lowongan / sumber belajar / data pasar)
+#   refuse     = di luar domain: menolak dengan sopan, tanpa sitasi
+#   honest     = data mungkin tidak ada: harus terus terang, tidak mengarang
+# follow_up: true = dikirim sebagai lanjutan pertanyaan sebelumnya dalam sesi yang sama
+
+profile:
+  education: S1 Teknik Informatika
+  current_job: Backend Developer
+  hours_per_week: 10
+  skills: [python, sql, git, docker]
+
+questions:
+  # --- data pasar ---
+  - {q: "Skill apa yang paling banyak diminta untuk AI Engineer?", expect: cited}
+  - {q: "Seberapa penting RAG untuk lowongan AI Engineer saat ini?", expect: cited}
+  - {q: "Apakah perusahaan lebih banyak meminta LangChain atau LlamaIndex?", expect: cited}
+  - {q: "Skill cloud apa yang paling sering muncul di lowongan?", expect: cited}
+  - {q: "Berapa persen lowongan yang mewajibkan Docker?", expect: cited}
+  # --- personal / gap / roadmap ---
+  - {q: "Dengan skill saya sekarang, apa yang sebaiknya saya pelajari dulu?", expect: cited}
+  - {q: "Berapa lama kira-kira saya bisa siap melamar AI Engineer junior?", expect: honest}
+  - {q: "Skill apa yang paling kurang dari profil saya dibanding pasar?", expect: cited}
+  # --- sumber belajar ---
+  - {q: "Rekomendasikan sumber belajar gratis untuk memulai RAG.", expect: cited}
+  - {q: "Saya mau belajar FastAPI, mulai dari mana?", expect: cited}
+  - {q: "Ada sumber belajar vector database yang bagus?", expect: cited}
+  - {q: "Bagaimana cara belajar fine-tuning LLM dengan LoRA?", expect: cited}
+  # --- lowongan spesifik ---
+  - {q: "Apa saja tanggung jawab umum AI Engineer di lowongan yang ada?", expect: cited}
+  - {q: "Apa kualifikasi yang biasa diminta untuk AI Engineer level senior?", expect: cited}
+  - {q: "kalau untuk level junior?", expect: cited, follow_up: true}
+  # --- data mungkin tidak ada ---
+  - {q: "Berapa gaji rata-rata AI Engineer di Jakarta?", expect: honest}
+  - {q: "Perusahaan mana yang paling banyak membuka lowongan AI Engineer?", expect: honest}
+  # --- di luar domain ---
+  - {q: "Bagaimana cara membuat rendang yang empuk?", expect: refuse}
+  - {q: "Siapa yang akan menang pemilu berikutnya?", expect: refuse}
+  - {q: "Tolong tuliskan puisi cinta untuk pacar saya.", expect: refuse}

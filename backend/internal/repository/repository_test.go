@@ -212,3 +212,37 @@ func TestJobCreateAndDuplicate(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestDeletingSourceDeletesChunks(t *testing.T) {
+	db := testutil.DB(t)
+	ctx := context.Background()
+	job, err := repository.NewJobRepository(db).Create(ctx, model.JobInput{
+		Title: "AI Engineer", SourceName: "Glints", CollectedAt: time.Now(), RawText: testutil.LongText(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var resID string
+	if err := db.QueryRow(ctx, `
+		INSERT INTO learning_resources (skill_id, title, url, type) VALUES ($1, 'x', 'https://x.example', 'docs')
+		RETURNING id::text`, testutil.SkillID(t, "python")).Scan(&resID); err != nil {
+		t.Fatal(err)
+	}
+	for _, src := range []struct{ typ, id string }{{"job_posting", job.ID.String()}, {"learning_resource", resID}} {
+		if _, err := db.Exec(ctx, `INSERT INTO document_chunks (source_type, source_id, content) VALUES ($1, $2, 'teks')`,
+			src.typ, src.id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := db.Exec(ctx, `DELETE FROM job_postings WHERE id = $1`, job.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(ctx, `DELETE FROM learning_resources WHERE id = $1`, resID); err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	_ = db.QueryRow(ctx, `SELECT count(*) FROM document_chunks`).Scan(&n)
+	if n != 0 {
+		t.Errorf("chunk tersisa = %d, ingin 0 (trigger harus menghapus chunk sumber yang dihapus)", n)
+	}
+}

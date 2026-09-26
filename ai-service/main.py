@@ -5,8 +5,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.api import health, internal, roadmap
-from src.ingestion.factory import build_processor, build_resource_embedder
+from src.api import chat, health, internal, roadmap
+from src.ingestion.factory import build_chat_service, build_processor, build_resource_embedder
 from src.utils.db import close_pool, open_pool
 from src.utils.logging import setup_logging
 
@@ -18,6 +18,7 @@ async def lifespan(app: FastAPI):
     pool = await open_pool()
     app.state.processor = build_processor(pool)
     app.state.resource_embedder = build_resource_embedder(pool)
+    app.state.chat_service = build_chat_service(pool)
     yield
     await close_pool()
 
@@ -26,3 +27,4 @@ app = FastAPI(title="AI Career Compass - ai-service", lifespan=lifespan)
 app.include_router(health.router)
 app.include_router(internal.router)
 app.include_router(roadmap.router)
+app.include_router(chat.router)

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -264,4 +265,63 @@ type ExplainedNode struct {
 	SkillID   int     `json:"skill_id"`
 	Rationale string  `json:"rationale"`
 	EstWeeks  float64 `json:"est_weeks"`
+}
+
+// --- chat ---
+
+type ChatMessage struct {
+	ID        uuid.UUID       `json:"id"`
+	Role      string          `json:"role"`
+	Content   string          `json:"content"`
+	Citations json.RawMessage `json:"citations"`
+	CreatedAt time.Time       `json:"created_at"`
+}
+
+// ChatAIRequest: kontrak POST /internal/chat (ai-service).
+type ChatAIRequest struct {
+	Question string          `json:"question"`
+	History  []ChatTurn      `json:"history"`
+	User     *ChatUser       `json:"user"`
+	Market   *ChatMarketData `json:"market"`
+}
+
+type ChatTurn struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type ChatUser struct {
+	Education    *string  `json:"education"`
+	CurrentJob   *string  `json:"current_job"`
+	TargetRole   *string  `json:"target_role"`
+	HoursPerWeek *int16   `json:"hours_per_week"`
+	Skills       []string `json:"skills"`
+	Gaps         []string `json:"gaps"`
+	Roadmap      []string `json:"roadmap"`
+}
+
+type ChatMarketData struct {
+	Role         string           `json:"role"`
+	TotalJobs    int              `json:"total_jobs"`
+	SnapshotDate *string          `json:"snapshot_date"`
+	SmallSample  bool             `json:"small_sample"`
+	Items        []ChatMarketItem `json:"items"`
+}
+
+type ChatMarketItem struct {
+	Name        string  `json:"name"`
+	DemandPct   float64 `json:"demand_pct"`
+	RequiredPct float64 `json:"required_pct"`
+}
+
+// ChatDone: isi event `done` dari ai-service yang disimpan ke chat_messages.
+type ChatDone struct {
+	Answer    string          `json:"answer"`
+	Citations json.RawMessage `json:"citations"`
+	Model     *string         `json:"model"`
+	Usage     struct {
+		PromptTokens     *int `json:"prompt_tokens"`
+		CompletionTokens *int `json:"completion_tokens"`
+	} `json:"usage"`
+	LatencyMs *int `json:"latency_ms"`
 }

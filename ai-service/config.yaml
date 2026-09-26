@@ -20,7 +20,7 @@ embedding:
 ingestion:
   concurrency: 2            # lowongan yang diproses paralel
 retrieval:
-  top_k: 8
+  top_k: 6                 # sesuai rencana: top-k = 6 setelah RRF
   rrf_k: 60                 # konstanta Reciprocal Rank Fusion
   vector_candidates: 30
   keyword_candidates: 30

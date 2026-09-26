@@ -37,15 +37,18 @@ func NewRouter(cfg *config.Config, db *pgxpool.Pool, log *slog.Logger) *gin.Engi
 		processor service.JobProcessor
 		embedder  service.ResourceEmbedder
 		explainer service.RoadmapExplainer
+		streamer  service.ChatStreamer
 	)
 	if cfg.AIServiceURL != "" {
 		ai := aiclient.New(cfg.AIServiceURL, cfg.InternalToken)
-		processor, embedder, explainer = ai, ai, ai
+		processor, embedder, explainer, streamer = ai, ai, ai, ai
 	}
 	jobSvc := service.NewJobService(repository.NewJobRepository(db), processor, log)
 	insightsSvc := service.NewInsightsService(insightsRepo)
 	gapSvc := service.NewGapService(insightsRepo, profileRepo, service.DefaultGapConfig)
-	roadmapSvc := service.NewRoadmapService(gapSvc, repository.NewRoadmapRepository(db), resourceRepo, explainer, log)
+	roadmapRepo := repository.NewRoadmapRepository(db)
+	roadmapSvc := service.NewRoadmapService(gapSvc, roadmapRepo, resourceRepo, explainer, log)
+	chatSvc := service.NewChatService(gapSvc, roadmapRepo, repository.NewChatRepository(db), streamer)
 	resourceSvc := service.NewResourceService(resourceRepo, taxonomyRepo, embedder, log)
 
 	sessions := &SessionHandler{svc: sessionSvc}
@@ -56,6 +59,7 @@ func NewRouter(cfg *config.Config, db *pgxpool.Pool, log *slog.Logger) *gin.Engi
 	gap := &GapHandler{svc: gapSvc}
 	roadmap := &RoadmapHandler{svc: roadmapSvc}
 	resources := &ResourceHandler{svc: resourceSvc}
+	chat := &ChatHandler{svc: chatSvc, log: log}
 
 	r := gin.New()
 	// Backend diakses langsung (tanpa reverse proxy), jadi jangan percaya X-Forwarded-For.
@@ -94,6 +98,8 @@ func NewRouter(cfg *config.Config, db *pgxpool.Pool, log *slog.Logger) *gin.Engi
 		user.POST("/roadmap/generate",
 			middleware.PerMinute(cfg.RoadmapGeneratePerMinute).Middleware(middleware.ByIP),
 			roadmap.Generate)
+		user.POST("/chat", middleware.PerMinute(cfg.ChatPerMinute).Middleware(middleware.BySession), chat.Chat)
+		user.GET("/chat/history", chat.History)
 
 		admin := api.Group("/admin", middleware.RequireAdmin(cfg.AdminToken), middleware.MaxBody(adminMaxBody))
 		admin.POST("/jobs", adminJobs.Create)

@@ -69,6 +69,7 @@ services:
       BACKEND_URL: http://backend:8080
       RAW_JOBS_DIR: /data/raw_jobs
       RESOURCES_FILE: /data/resources/learning_resources.yaml
+      CHAT_QUESTIONS_FILE: /data/eval/chat_questions.yaml
     volumes:
       - ./data:/data:ro
       - hf_cache:/app/.cache/huggingface   # cache model embedding lokal

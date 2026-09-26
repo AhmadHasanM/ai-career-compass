@@ -1,4 +1,4 @@
-"""Client LLM untuk endpoint OpenAI-compatible (OpenCode).
+"""Client LLM untuk endpoint OpenAI-compatible (Gemini, OpenCode, dll.).
 
 Retry untuk 429 / 5xx / timeout ditangani SDK (max_retries di config.yaml);
 model dan kredensial dari .env (LLM_BASE_URL, LLM_API_KEY, LLM_MODEL).
@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -31,6 +32,18 @@ class ChatResult:
     latency_ms: int
 
 
+@dataclass
+class StreamDelta:
+    """Satu potong teks dari stream. Event terakhir (done=True) membawa model dan usage;
+    usage bisa None jika provider tidak mengirimnya."""
+
+    text: str = ""
+    done: bool = False
+    model: str | None = None
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+
+
 class ChatModel(Protocol):
     async def chat(
         self,
@@ -40,6 +53,12 @@ class ChatModel(Protocol):
         max_tokens: int | None = None,
         json_mode: bool = False,
     ) -> ChatResult: ...
+
+
+class StreamingChatModel(ChatModel, Protocol):
+    def chat_stream(
+        self, messages: list[dict[str, str]], *, temperature: float | None = None, max_tokens: int | None = None
+    ) -> AsyncIterator[StreamDelta]: ...
 
 
 class OpenAICompatibleLLM:
@@ -58,9 +77,21 @@ class OpenAICompatibleLLM:
             timeout=cfg.get("timeout_seconds", 60),
             max_retries=cfg.get("max_retries", 3),
         )
-        # Tidak semua model di endpoint kompatibel mendukung response_format;
-        # jika ditolak sekali, berikutnya instruksi JSON di prompt yang diandalkan.
+        # Tidak semua endpoint kompatibel mendukung response_format / stream_options;
+        # jika ditolak sekali, fitur itu tidak dipakai lagi.
         self._json_mode_supported = True
+        self._stream_usage_supported = True
+
+    def _base_kwargs(self, messages, temperature, max_tokens) -> dict:
+        kwargs: dict = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": self.default_temperature if temperature is None else temperature,
+            "max_tokens": max_tokens or self.default_max_tokens,
+        }
+        if self.reasoning_effort:
+            kwargs["reasoning_effort"] = self.reasoning_effort
+        return kwargs
 
     async def chat(
         self,
@@ -70,14 +101,7 @@ class OpenAICompatibleLLM:
         max_tokens: int | None = None,
         json_mode: bool = False,
     ) -> ChatResult:
-        kwargs: dict = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": self.default_temperature if temperature is None else temperature,
-            "max_tokens": max_tokens or self.default_max_tokens,
-        }
-        if self.reasoning_effort:
-            kwargs["reasoning_effort"] = self.reasoning_effort
+        kwargs = self._base_kwargs(messages, temperature, max_tokens)
         use_json = json_mode and self._json_mode_supported
         if use_json:
             kwargs["response_format"] = {"type": "json_object"}
@@ -86,7 +110,7 @@ class OpenAICompatibleLLM:
         try:
             resp = await self._client.chat.completions.create(**kwargs)
         except Exception as e:  # noqa: BLE001 - SDK melempar berbagai subclass BadRequestError
-            if use_json and _looks_like_unsupported_response_format(e):
+            if use_json and _rejected_param(e, "response_format"):
                 log.warning("model %s menolak response_format; lanjut tanpa JSON mode", self.model)
                 self._json_mode_supported = False
                 kwargs.pop("response_format")
@@ -104,7 +128,35 @@ class OpenAICompatibleLLM:
             latency_ms=latency_ms,
         )
 
+    async def chat_stream(
+        self, messages: list[dict[str, str]], *, temperature: float | None = None, max_tokens: int | None = None
+    ) -> AsyncIterator[StreamDelta]:
+        kwargs = self._base_kwargs(messages, temperature, max_tokens) | {"stream": True}
+        if self._stream_usage_supported:
+            kwargs["stream_options"] = {"include_usage": True}
+        try:
+            stream = await self._client.chat.completions.create(**kwargs)
+        except Exception as e:  # noqa: BLE001
+            if "stream_options" in kwargs and _rejected_param(e, "stream_options"):
+                log.warning("model %s menolak stream_options; usage token tidak tersedia", self.model)
+                self._stream_usage_supported = False
+                kwargs.pop("stream_options")
+                stream = await self._client.chat.completions.create(**kwargs)
+            else:
+                raise
 
-def _looks_like_unsupported_response_format(e: Exception) -> bool:
-    status = getattr(e, "status_code", None)
-    return status in (400, 422) and "response_format" in str(e).lower()
+        final = StreamDelta(done=True, model=self.model)
+        async for chunk in stream:
+            if chunk.model:
+                final.model = chunk.model
+            if chunk.usage:
+                final.prompt_tokens = chunk.usage.prompt_tokens
+                final.completion_tokens = chunk.usage.completion_tokens
+            for choice in chunk.choices or []:
+                if choice.delta and choice.delta.content:
+                    yield StreamDelta(text=choice.delta.content)
+        yield final
+
+
+def _rejected_param(e: Exception, param: str) -> bool:
+    return getattr(e, "status_code", None) in (400, 422) and param in str(e).lower()

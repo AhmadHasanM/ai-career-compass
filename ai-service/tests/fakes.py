@@ -35,3 +35,20 @@ class FakeEmbedder:
 
     async def embed_query(self, text):
         return self._vec(text)
+
+
+class FakeStreamingLLM(FakeLLM):
+    """Stream potongan teks tetap, lalu event akhir dengan usage."""
+
+    def __init__(self, pieces: list[str], replies=None) -> None:
+        super().__init__(replies or [])
+        self.pieces = pieces
+        self.stream_calls: list[list[dict]] = []
+
+    async def chat_stream(self, messages, *, temperature=None, max_tokens=None):
+        from src.llm.client import StreamDelta
+
+        self.stream_calls.append(list(messages))
+        for p in self.pieces:
+            yield StreamDelta(text=p)
+        yield StreamDelta(done=True, model="fake-llm", prompt_tokens=321, completion_tokens=45)

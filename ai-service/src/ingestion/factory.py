@@ -45,3 +45,19 @@ def build_processor(pool: AsyncConnectionPool) -> JobProcessor:
 
 def build_resource_embedder(pool: AsyncConnectionPool) -> ResourceEmbedder:
     return ResourceEmbedder(pool, get_embedder)
+
+
+def build_chat_service(pool: AsyncConnectionPool) -> "ChatService":
+    from src.chat.service import ChatService
+    from src.retrieval.hybrid import HybridRetriever
+    from src.utils.tracing import LogTracer
+
+    p = get_settings().pipeline
+    r, llm_cfg = p.get("retrieval", {}), p.get("llm", {})
+    retriever = HybridRetriever(
+        pool, get_embedder,
+        top_k=r.get("top_k", 6), rrf_k=r.get("rrf_k", 60),
+        vector_candidates=r.get("vector_candidates", 30), keyword_candidates=r.get("keyword_candidates", 30),
+    )
+    return ChatService(retriever, get_llm, LogTracer(),
+                       max_tokens=llm_cfg.get("max_tokens", 1024), temperature=llm_cfg.get("temperature", 0.2))

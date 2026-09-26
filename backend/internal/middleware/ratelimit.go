@@ -83,6 +83,9 @@ type KeyFunc func(*gin.Context) string
 
 func ByIP(c *gin.Context) string { return "ip:" + c.ClientIP() }
 
+// BySession memakai sesi yang sudah divalidasi RequireSession (harus dipasang sesudahnya).
+func BySession(c *gin.Context) string { return "session:" + SessionID(c).String() }
+
 // Middleware menolak request dengan 429 + Retry-After jika bucket key habis.
 func (rl *RateLimiter) Middleware(key KeyFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {

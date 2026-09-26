@@ -109,3 +109,18 @@ func (c *Client) ExplainRoadmap(ctx context.Context, in model.ExplainRequest) (*
 	}
 	return &out, nil
 }
+
+// ChatStream membuka stream SSE /internal/chat. Body dikembalikan apa adanya untuk diteruskan
+// per event; pemanggil wajib menutupnya. Deadline mengikuti context pemanggil.
+func (c *Client) ChatStream(ctx context.Context, in model.ChatAIRequest) (io.ReadCloser, error) {
+	req, err := c.newRequest(ctx, http.MethodPost, "/internal/chat", in)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "text/event-stream")
+	resp, err := c.do(req, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}

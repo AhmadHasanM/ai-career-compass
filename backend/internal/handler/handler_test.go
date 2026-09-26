@@ -34,11 +34,13 @@ type api struct {
 
 func newAPI(t *testing.T, mutate ...func(*config.Config)) *api {
 	cfg := &config.Config{
-		AdminToken:             adminToken,
-		CORSOrigins:            []string{"http://localhost:3000"},
-		RateLimitRPS:           1000,
-		RateLimitBurst:         1000,
-		SessionCreatePerMinute: 1000,
+		AdminToken:               adminToken,
+		CORSOrigins:              []string{"http://localhost:3000"},
+		RateLimitRPS:             1000,
+		RateLimitBurst:           1000,
+		SessionCreatePerMinute:   1000,
+		RoadmapGeneratePerMinute: 1000,
+		ChatPerMinute:            1000,
 	}
 	for _, m := range mutate {
 		m(cfg)
